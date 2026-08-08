@@ -1,6 +1,7 @@
+import { useMemo } from "react";
 import { Activity, ScanLine, Layers, TrendingUp, Sparkles } from "lucide-react";
-import { summary } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
+import { buildRttDashboardData } from "@/lib/rtt-dashboard-data";
 
 function Card({
   label,
@@ -42,12 +43,15 @@ function Card({
 }
 
 export function SummaryCards() {
+  const dashboardData = useMemo(() => buildRttDashboardData(20), []);
+  const strongSetups = dashboardData.qualifiedRows.filter((row) => (row.rttScore ?? 0) >= 80).length;
+
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
       <Card
-        label="Market status"
-        value="Open"
-        meta={summary.marketStatus.session}
+        label="Development data"
+        value="Synthetic"
+        meta="RTT engine over mock market history"
         icon={Activity}
         accent="bull"
       >
@@ -56,37 +60,34 @@ export function SummaryCards() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bull/70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-bull" />
           </span>
-          <span className="num text-muted-foreground">
-            NIFTY 50 {summary.marketStatus.nifty.toLocaleString("en-IN")}
-          </span>
-          <span className="num font-semibold text-bull">+{summary.marketStatus.niftyPct}%</span>
+          <span className="text-muted-foreground">Development-only visibility</span>
         </div>
       </Card>
       <Card
         label="Stocks scanned"
-        value={summary.scanned.toLocaleString("en-IN")}
-        meta="Full NSE universe · 15m candles"
+        value={dashboardData.totalStocks.toLocaleString("en-IN")}
+        meta="Synthetic NSE-style universe"
         icon={ScanLine}
         accent="info"
       />
       <Card
-        label="EMA qualified"
-        value={String(summary.emaQualified)}
-        meta="10 > 20 > 50 > 100 > 200 stack"
+        label="RTT qualified"
+        value={String(dashboardData.qualifiedRows.length)}
+        meta="EMA + RSI qualification gate"
         icon={Layers}
         accent="primary"
       />
       <Card
-        label="New breakouts"
-        value={String(summary.breakouts)}
-        meta="20-day high with volume thrust"
+        label="Top 20 RTT"
+        value={String(Math.min(dashboardData.qualifiedRows.length, 20))}
+        meta="Ranked by RTT score"
         icon={TrendingUp}
         accent="warn"
       />
       <Card
-        label="AI signals"
-        value={String(summary.aiSignals)}
-        meta="Confidence above 80%"
+        label="Strong setups"
+        value={String(strongSetups)}
+        meta="80+ RTT quality"
         icon={Sparkles}
         accent="primary"
       />
