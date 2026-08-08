@@ -1,0 +1,1 @@
+Read PROJECT_CONTEXT.md before doing anything. Understand the existing architecture. Preserve the design system. Only implement the requested feature. Explain your implementation before making changes. Do not modify unrelated files.
