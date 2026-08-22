@@ -5,7 +5,7 @@ import { positions, inr } from "@/lib/market-data";
 
 const title = "Portfolio — RTT Screener";
 const description =
-  "Open swing positions with live mark-to-market P&L, exposure weights and allocation health.";
+  "Review a development-only portfolio snapshot with synthetic positions and P&L.";
 
 export const Route = createFileRoute("/portfolio")({
   head: () => ({
@@ -30,7 +30,7 @@ function PortfolioPage() {
   const pnl = value - invested;
 
   return (
-    <AppShell title="Portfolio" subtitle="Mark-to-market across all open swing positions">
+    <AppShell title="Portfolio" subtitle="Development-only portfolio snapshot for the RTT review">
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {[

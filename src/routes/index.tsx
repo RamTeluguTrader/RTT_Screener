@@ -7,7 +7,7 @@ import { BottomPanels } from "@/components/dashboard/BottomPanels";
 
 const title = "RTT Screener — EMA Trend Dashboard for Swing Traders";
 const description =
-  "Live NSE swing-trading terminal: EMA stack screening, trend scores, AI confidence signals, breadth and sector strength in one dark dashboard.";
+  "Development-only RTT dashboard for reviewing synthetic market data and score breakdowns.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   return (
-    <AppShell title="Dashboard" subtitle="Live EMA trend intelligence across the NSE universe">
+    <AppShell title="Dashboard" subtitle="Development RTT review across a synthetic market dataset">
       <div className="flex flex-col gap-4">
         <SummaryCards />
         <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_340px]">

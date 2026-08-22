@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 const title = "Alerts — RTT Screener";
 const description =
-  "Create custom price, trend-score and AI-confidence alerts on any watchlist or scan result, with in-app delivery.";
+  "Create custom price, trend-score and confidence alerts within the development RTT review.";
 
 export const Route = createFileRoute("/alerts")({
   head: () => ({

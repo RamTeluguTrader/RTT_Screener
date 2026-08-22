@@ -14,6 +14,7 @@ import { Route as AlertsRouteImport } from './routes/alerts'
 import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as StockDetailRouteImport } from './routes/stock-detail'
 import { Route as WatchlistRouteImport } from './routes/watchlist'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StockDetailRoute = StockDetailRouteImport.update({
+  id: '/stock/$symbol',
+  path: '/stock/$symbol',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WatchlistRoute = WatchlistRouteImport.update({
   id: '/watchlist',
   path: '/watchlist',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof PortfolioRoute
   '/scanner': typeof ScannerRoute
   '/settings': typeof SettingsRoute
+  '/stock/$symbol': typeof StockDetailRoute
   '/watchlist': typeof WatchlistRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof PortfolioRoute
   '/scanner': typeof ScannerRoute
   '/settings': typeof SettingsRoute
+  '/stock/$symbol': typeof StockDetailRoute
   '/watchlist': typeof WatchlistRoute
 }
 export interface FileRoutesById {
@@ -70,14 +78,15 @@ export interface FileRoutesById {
   '/portfolio': typeof PortfolioRoute
   '/scanner': typeof ScannerRoute
   '/settings': typeof SettingsRoute
+  '/stock/$symbol': typeof StockDetailRoute
   '/watchlist': typeof WatchlistRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/alerts' | '/portfolio' | '/scanner' | '/settings' | '/watchlist'
+    '/' | '/alerts' | '/portfolio' | '/scanner' | '/settings' | '/stock/$symbol' | '/watchlist'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alerts' | '/portfolio' | '/scanner' | '/settings' | '/watchlist'
+  to: '/' | '/alerts' | '/portfolio' | '/scanner' | '/settings' | '/stock/$symbol' | '/watchlist'
   id:
     | '__root__'
     | '/'
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/scanner'
     | '/settings'
+    | '/stock/$symbol'
     | '/watchlist'
   fileRoutesById: FileRoutesById
 }
@@ -94,6 +104,7 @@ export interface RootRouteChildren {
   PortfolioRoute: typeof PortfolioRoute
   ScannerRoute: typeof ScannerRoute
   SettingsRoute: typeof SettingsRoute
+  StockDetailRoute: typeof StockDetailRoute
   WatchlistRoute: typeof WatchlistRoute
 }
 
@@ -134,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/stock/$symbol': {
+      id: '/stock/$symbol'
+      path: '/stock/$symbol'
+      fullPath: '/stock/$symbol'
+      preLoaderRoute: typeof StockDetailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/watchlist': {
       id: '/watchlist'
       path: '/watchlist'
@@ -150,6 +168,7 @@ const rootRouteChildren: RootRouteChildren = {
   PortfolioRoute: PortfolioRoute,
   ScannerRoute: ScannerRoute,
   SettingsRoute: SettingsRoute,
+  StockDetailRoute: StockDetailRoute,
   WatchlistRoute: WatchlistRoute,
 }
 export const routeTree = rootRouteImport

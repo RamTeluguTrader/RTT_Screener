@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 
 const title = "Settings — RTT Screener";
 const description =
-  "Tune scan cadence, EMA model parameters, alert delivery and desk preferences.";
+  "Adjust development-view preferences for the RTT screener demo.";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -21,14 +21,14 @@ export const Route = createFileRoute("/settings")({
 
 const toggles = [
   { label: "Intraday rescan every 15 minutes", desc: "Recompute EMA posture on each candle close", on: true },
-  { label: "AI ranking", desc: "Score candidates with the confidence model", on: true },
+  { label: "RTT ranking", desc: "Score candidates with the technical confidence model", on: true },
   { label: "Push alerts to mobile", desc: "Deliver triggers to the RTT mobile app", on: true },
   { label: "Include SME segment", desc: "Add SME-listed instruments to the universe", on: false },
 ];
 
 function SettingsPage() {
   return (
-    <AppShell title="Settings" subtitle="Desk configuration for Rohan Kulkarni · Pro plan">
+    <AppShell title="Settings" subtitle="Desk configuration for the development RTT review">
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Panel title="Scanner preferences">
           <ul className="flex flex-col gap-4">
@@ -50,7 +50,7 @@ function SettingsPage() {
               ["Name", "Rohan Kulkarni"],
               ["Email", "rohan@rttdesk.in"],
               ["Broker link", "Zerodha Kite · connected"],
-              ["Plan", "Pro desk · renews 12 Sep 2026"],
+              ["Plan", "Development review mode"],
             ].map(([k, v]) => (
               <div
                 key={k}

@@ -11,6 +11,7 @@ import { calculateRttScore } from "../src/lib/rtt-score";
 describe("development market dataset", () => {
   it("exposes a synthetic dataset with the expected size and sector coverage", () => {
     expect(IS_DEVELOPMENT_DATA).toBe(true);
+    expect(DEVELOPMENT_MARKET_STOCKS.length).toBe(60);
     expect(DEVELOPMENT_MARKET_STOCKS.length).toBeGreaterThanOrEqual(50);
     expect(DEVELOPMENT_MARKET_STOCKS.length).toBeLessThanOrEqual(100);
     expect(new Set(DEVELOPMENT_MARKET_STOCKS.map((stock) => stock.sector)).size).toBeGreaterThanOrEqual(6);

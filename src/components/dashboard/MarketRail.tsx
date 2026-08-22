@@ -1,5 +1,5 @@
-import { TrendingUp, TrendingDown, Newspaper, Sparkles } from "lucide-react";
-import { topGainers, topLosers, news, aiRecommendations, inr } from "@/lib/market-data";
+import { TrendingUp, TrendingDown, Newspaper, ScanSearch } from "lucide-react";
+import { topGainers, topLosers, news, inr } from "@/lib/market-data";
 import { Panel, Delta } from "@/components/ui-kit/Panel";
 
 function MoverList({ items }: { items: { symbol: string; pct: number; price: number }[] }) {
@@ -58,20 +58,20 @@ export function MarketRail() {
         </ul>
       </Panel>
 
-      <Panel title="AI Recommendations" action={<Sparkles className="h-4 w-4 text-primary" />}>
+      <Panel title="Research Notes" action={<ScanSearch className="h-4 w-4 text-primary" />}>
         <div className="flex flex-col gap-3">
-          {aiRecommendations.map((r) => (
-            <article key={r.symbol} className="rounded-lg border border-border bg-surface p-3">
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-                <p className="num truncate text-xs font-semibold">{r.symbol}</p>
-                <span className="num rounded-md bg-primary/12 px-1.5 py-0.5 text-[10px] font-semibold text-primary ring-1 ring-primary/25">
-                  {r.confidence}%
-                </span>
-              </div>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">{r.thesis}</p>
-              <p className="num mt-2 text-[10px] text-muted-foreground/80">Horizon {r.horizon}</p>
-            </article>
-          ))}
+          <div className="rounded-lg border border-border bg-surface p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Development view</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              RTT results highlight technical structure and qualification context for review.
+            </p>
+          </div>
+          <div className="rounded-lg border border-border bg-surface p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Technical focus</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              The dashboard remains focused on score breakdowns, EMA alignment, and sector context.
+            </p>
+          </div>
         </div>
       </Panel>
     </div>

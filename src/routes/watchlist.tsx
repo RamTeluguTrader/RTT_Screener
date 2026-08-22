@@ -9,7 +9,7 @@ import { stocks, watchlist, inr } from "@/lib/market-data";
 
 const title = "Watchlist — RTT Screener";
 const description =
-  "Track your shortlisted swing candidates with live prices, EMA posture and setup notes.";
+  "Track development-demo swing candidates with synthetic prices, EMA posture and setup notes.";
 
 export const Route = createFileRoute("/watchlist")({
   head: () => ({
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/watchlist")({
 
 function WatchlistPage() {
   return (
-    <AppShell title="Watchlist" subtitle="Five names on the desk, monitored tick by tick">
+    <AppShell title="Watchlist" subtitle="Five development-demo names tracked in the current RTT review">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {watchlist.map((w) => {
           const s = stocks.find((x) => x.symbol === w.symbol);

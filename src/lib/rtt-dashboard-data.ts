@@ -35,9 +35,9 @@ const COMPONENT_LABELS = [
   { label: "EMA Stack Quality", explanation: "Strong trend alignment and healthy EMA structure." },
   { label: "Momentum", explanation: "Strong recent price momentum." },
   { label: "Volume", explanation: "Volume participation is supporting the current move." },
-  { label: "Sector Strength", explanation: "Sector participation is favorable." },
+  { label: "Sector", explanation: "Sector participation is favorable." },
   { label: "52W High Proximity", explanation: "Price is trading favorably relative to its 52-week range." },
-  { label: "Extension Quality", explanation: "Price structure remains reasonably positioned relative to the trend." },
+  { label: "Extension", explanation: "Price structure remains reasonably positioned relative to the trend." },
 ] as const;
 
 function mapComponentScores(result: RttScoreResult): DashboardComponentScore[] {
@@ -45,9 +45,9 @@ function mapComponentScores(result: RttScoreResult): DashboardComponentScore[] {
     { label: "EMA Stack Quality", score: result.emaStackScore.score, maximum: result.emaStackScore.maximum, explanation: COMPONENT_LABELS[0]!.explanation },
     { label: "Momentum", score: result.momentumScore.score, maximum: result.momentumScore.maximum, explanation: COMPONENT_LABELS[1]!.explanation },
     { label: "Volume", score: result.volumeScore.score, maximum: result.volumeScore.maximum, explanation: COMPONENT_LABELS[2]!.explanation },
-    { label: "Sector Strength", score: result.sectorScore.score, maximum: result.sectorScore.maximum, explanation: COMPONENT_LABELS[3]!.explanation },
+    { label: "Sector", score: result.sectorScore.score, maximum: result.sectorScore.maximum, explanation: COMPONENT_LABELS[3]!.explanation },
     { label: "52W High Proximity", score: result.highProximityScore.score, maximum: result.highProximityScore.maximum, explanation: COMPONENT_LABELS[4]!.explanation },
-    { label: "Extension Quality", score: result.extensionScore.score, maximum: result.extensionScore.maximum, explanation: COMPONENT_LABELS[5]!.explanation },
+    { label: "Extension", score: result.extensionScore.score, maximum: result.extensionScore.maximum, explanation: COMPONENT_LABELS[5]!.explanation },
   ];
 }
 

@@ -56,8 +56,11 @@ export function AppShell({
               <div className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 xl:flex">
                 <Search className="h-3.5 w-3.5 text-muted-foreground" />
                 <input
+                  disabled
+                  readOnly
+                  aria-label="Search is not implemented in the development view"
                   placeholder="Search symbol, sector, setup"
-                  className="w-56 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                  className="w-56 bg-transparent text-xs outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
                 />
                 <kbd className="num rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
                   /
@@ -76,7 +79,12 @@ export function AppShell({
                 )}
               </Link>
 
-              <button className="flex items-center gap-2 rounded-lg border border-border bg-surface py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-accent">
+              <button
+                type="button"
+                disabled
+                aria-label="Profile menu is not implemented in the development view"
+                className="flex items-center gap-2 rounded-lg border border-border bg-surface py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
+              >
                 <span className="num grid h-7 w-7 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-primary">
                   RK
                 </span>

@@ -2,11 +2,11 @@
 
 ## About
 
-RTT Screener is an AI-powered momentum stock screener for Indian stock markets.
+RTT Screener is a technical stock screening and research tool for swing traders.
 
-The goal is to help traders identify the strongest trending stocks within 30 seconds.
+The goal is to help users review technically interesting stocks and understand RTT qualification context.
 
-The application should be fast, clean, modern, and suitable for professional traders.
+The application should be fast, clean, modern, and suitable for research workflows.
 
 ---
 
@@ -28,19 +28,19 @@ Every screen should help traders answer one question.
 
 Dashboard
 
-What should I look at today?
+What technical setups are worth reviewing today?
 
 Scanner
 
-Why was this stock selected?
+Why was this stock selected by the RTT engine?
 
 Stock Details
 
-Should I buy, wait, or exit?
+What technical context supports the RTT qualification view?
 
 Portfolio
 
-Am I managing risk correctly?
+How are these monitored positions fitting the current research workflow?
 
 ---
 

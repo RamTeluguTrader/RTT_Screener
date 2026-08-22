@@ -176,7 +176,7 @@ export function CreateAlertDialog({
 
             <label className="flex flex-col gap-1.5">
               <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                Target value
+                Threshold value
               </span>
               <Input
                 inputMode="decimal"
@@ -203,7 +203,7 @@ export function CreateAlertDialog({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               maxLength={80}
-              placeholder="Why this level matters"
+              placeholder="Why this condition matters"
               className="text-xs"
             />
           </label>

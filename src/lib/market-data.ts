@@ -10,7 +10,6 @@ export type Stock = {
   ema: { e10: EmaState; e20: EmaState; e50: EmaState; e100: EmaState; e200: EmaState };
   trendScore: number;
   aiConfidence: number;
-  signal: "Buy" | "Watch" | "Avoid";
   spark: number[];
 };
 
@@ -27,7 +26,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "above", e200: "above" },
     trendScore: 94,
     aiConfidence: 91,
-    signal: "Buy",
     spark: s(12, 14, 13, 16, 18, 17, 21, 24, 23, 27, 29, 33),
   },
   {
@@ -40,7 +38,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "above", e200: "above" },
     trendScore: 91,
     aiConfidence: 88,
-    signal: "Buy",
     spark: s(30, 31, 29, 33, 35, 34, 38, 40, 39, 43, 45, 48),
   },
   {
@@ -53,7 +50,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "cross", e200: "above" },
     trendScore: 78,
     aiConfidence: 74,
-    signal: "Watch",
     spark: s(20, 21, 20, 22, 21, 23, 22, 24, 25, 24, 26, 27),
   },
   {
@@ -66,7 +62,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "above", e200: "above" },
     trendScore: 96,
     aiConfidence: 93,
-    signal: "Buy",
     spark: s(40, 42, 41, 46, 48, 51, 50, 55, 58, 61, 64, 69),
   },
   {
@@ -79,7 +74,6 @@ export const stocks: Stock[] = [
     ema: { e10: "below", e20: "above", e50: "above", e100: "above", e200: "above" },
     trendScore: 66,
     aiConfidence: 61,
-    signal: "Watch",
     spark: s(26, 27, 28, 27, 29, 28, 30, 29, 28, 30, 29, 28),
   },
   {
@@ -92,7 +86,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "above", e200: "cross" },
     trendScore: 82,
     aiConfidence: 79,
-    signal: "Buy",
     spark: s(18, 17, 19, 20, 19, 22, 23, 22, 25, 26, 28, 30),
   },
   {
@@ -105,7 +98,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "above", e200: "above" },
     trendScore: 89,
     aiConfidence: 85,
-    signal: "Buy",
     spark: s(10, 11, 13, 12, 15, 16, 18, 17, 20, 22, 24, 26),
   },
   {
@@ -118,7 +110,6 @@ export const stocks: Stock[] = [
     ema: { e10: "below", e20: "below", e50: "below", e100: "below", e200: "above" },
     trendScore: 31,
     aiConfidence: 44,
-    signal: "Avoid",
     spark: s(34, 33, 32, 33, 31, 30, 31, 29, 28, 27, 26, 25),
   },
   {
@@ -131,7 +122,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "above", e200: "above" },
     trendScore: 92,
     aiConfidence: 87,
-    signal: "Buy",
     spark: s(14, 15, 16, 15, 18, 19, 21, 20, 23, 25, 26, 29),
   },
   {
@@ -144,7 +134,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "cross", e100: "above", e200: "above" },
     trendScore: 74,
     aiConfidence: 70,
-    signal: "Watch",
     spark: s(24, 25, 24, 26, 27, 26, 28, 29, 28, 30, 31, 32),
   },
   {
@@ -157,7 +146,6 @@ export const stocks: Stock[] = [
     ema: { e10: "above", e20: "above", e50: "above", e100: "above", e200: "above" },
     trendScore: 88,
     aiConfidence: 84,
-    signal: "Buy",
     spark: s(28, 30, 29, 32, 34, 33, 36, 38, 40, 39, 43, 46),
   },
   {
@@ -170,7 +158,6 @@ export const stocks: Stock[] = [
     ema: { e10: "below", e20: "below", e50: "above", e100: "above", e200: "above" },
     trendScore: 48,
     aiConfidence: 52,
-    signal: "Avoid",
     spark: s(22, 23, 22, 21, 22, 20, 21, 19, 20, 19, 18, 18),
   },
 ];
@@ -226,27 +213,6 @@ export const news = [
   },
 ];
 
-export const aiRecommendations = [
-  {
-    symbol: "DIXON",
-    thesis: "Stacked EMA alignment with volume expansion above the 20-day breakout pivot.",
-    confidence: 93,
-    horizon: "8–12 sessions",
-  },
-  {
-    symbol: "BEL",
-    thesis: "Higher-low structure intact; RSI reset near 52 without breaking the 50 EMA.",
-    confidence: 87,
-    horizon: "6–10 sessions",
-  },
-  {
-    symbol: "ZOMATO",
-    thesis: "Range compression resolving upward, relative strength beating Nifty by 4.1%.",
-    confidence: 85,
-    horizon: "5–9 sessions",
-  },
-];
-
 export const breadth = {
   advancing: 1284,
   declining: 563,
@@ -289,7 +255,12 @@ export const positions = [
   { symbol: "SUNPHARMA", qty: 60, avg: 1832.0, ltp: 1789.25 },
 ];
 
-export const inr = (n: number) =>
-  "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export const inr = (n: number | null | undefined) => {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "N/A";
+  return "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
-export const pct = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(2)}%`;
+export const pct = (n: number | null | undefined) => {
+  if (typeof n !== "number" || !Number.isFinite(n)) return "N/A";
+  return `${n > 0 ? "+" : ""}${n.toFixed(2)}%`;
+};

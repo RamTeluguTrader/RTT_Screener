@@ -35,7 +35,7 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
               RTT Screener
             </span>
             <span className="block truncate text-[11px] text-muted-foreground">
-              Swing desk · NSE
+              Swing desk · Development
             </span>
           </span>
         </Link>
@@ -80,7 +80,7 @@ export function SideNav({ onNavigate }: { onNavigate?: () => void }) {
       <div className="mt-auto rounded-xl border border-border bg-surface p-3.5">
         <p className="text-xs font-semibold">Scanner engine</p>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-          EMA stack model v4.2 · last refresh 12s ago
+          Development data only · no live market feed
         </p>
         <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-muted">
           <div className="h-full w-[86%] rounded-full bg-primary" />

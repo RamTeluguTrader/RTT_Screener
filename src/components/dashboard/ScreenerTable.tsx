@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { ArrowUpRight, BellPlus, SlidersHorizontal } from "lucide-react";
 import { CreateAlertDialog } from "@/components/alerts/CreateAlertDialog";
 
@@ -113,6 +114,7 @@ function DetailPanel({ row }: { row: RttDashboardRow }) {
 }
 
 export function ScreenerTable() {
+  const navigate = useNavigate();
   const [topLimit, setTopLimit] = useState<(typeof topLimits)[number]>("Top 10");
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
 
@@ -126,7 +128,7 @@ export function ScreenerTable() {
         <div className="min-w-0">
           <h2 className="truncate text-sm font-semibold">RTT Qualified Screener</h2>
           <p className="truncate text-xs text-muted-foreground">
-            {rows.length} qualified instruments · Development Data
+            {rows.length} qualified instruments · {dashboardData.totalStocks} instruments · Development Data
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -146,7 +148,12 @@ export function ScreenerTable() {
               </button>
             ))}
           </div>
-          <button className="rounded-lg border border-border bg-surface p-2 text-muted-foreground hover:text-foreground">
+          <button
+            type="button"
+            disabled
+            aria-label="Filter controls are not implemented in the development view"
+            className="rounded-lg border border-border bg-surface p-2 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+          >
             <SlidersHorizontal className="h-4 w-4" />
           </button>
         </div>
@@ -175,7 +182,10 @@ export function ScreenerTable() {
               <tr
                 key={row.symbol}
                 className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-accent/40"
-                onClick={() => setSelectedSymbol(row.symbol)}
+                onClick={() => {
+                  setSelectedSymbol(row.symbol);
+                  navigate({ to: "/stock/$symbol", params: { symbol: row.symbol } });
+                }}
               >
                 <td className="px-4 py-3">
                   <span className="num text-xs font-semibold">#{row.rank}</span>
@@ -232,7 +242,14 @@ export function ScreenerTable() {
                         </button>
                       }
                     />
-                    <button className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-primary/40 hover:text-primary">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        navigate({ to: "/stock/$symbol", params: { symbol: row.symbol } });
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium transition-colors hover:border-primary/40 hover:text-primary"
+                    >
                       View
                       <ArrowUpRight className="h-3.5 w-3.5" />
                     </button>
