@@ -1,13 +1,63 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowUpRight, BellPlus, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ArrowUpRight, BellPlus, SlidersHorizontal } from "lucide-react";
 import { CreateAlertDialog } from "@/components/alerts/CreateAlertDialog";
 
 import { buildRttDashboardData, type RttDashboardRow } from "@/lib/rtt-dashboard-data";
+import { DEFAULT_SORT, nextSortState, sortDashboardRows, type SortColumn, type SortState } from "@/lib/rtt-table-sort";
 import { inr } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
 
 const topLimits = ["Top 10", "Top 20"] as const;
+
+const SORTABLE_COLUMN_LABELS: Record<SortColumn, string> = {
+  symbol: "Symbol",
+  price: "Price",
+  rsi: "RSI",
+  rttScore: "RTT Score",
+  classification: "Classification",
+};
+
+function SortableHeaderCell({
+  column,
+  align = "left",
+  sort,
+  onSort,
+}: {
+  column: SortColumn;
+  align?: "left" | "right";
+  sort: SortState;
+  onSort: (column: SortColumn) => void;
+}) {
+  const active = sort.column === column;
+  const ariaSort = active ? (sort.direction === "asc" ? "ascending" : "descending") : "none";
+
+  return (
+    <th className={cn("px-4 py-2.5 font-semibold", align === "right" && "text-right")} aria-sort={ariaSort}>
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        aria-label={`Sort by ${SORTABLE_COLUMN_LABELS[column]}`}
+        className={cn(
+          "inline-flex items-center gap-1 uppercase tracking-[0.12em] transition-colors hover:text-foreground",
+          align === "right" && "flex-row-reverse",
+          active ? "text-foreground" : "text-muted-foreground",
+        )}
+      >
+        <span>{SORTABLE_COLUMN_LABELS[column]}</span>
+        {active ? (
+          sort.direction === "asc" ? (
+            <ArrowUp className="h-3 w-3" />
+          ) : (
+            <ArrowDown className="h-3 w-3" />
+          )
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-40" />
+        )}
+      </button>
+    </th>
+  );
+}
 
 function Score({ value }: { value: number | null }) {
   if (value === null) {
@@ -117,10 +167,16 @@ export function ScreenerTable() {
   const navigate = useNavigate();
   const [topLimit, setTopLimit] = useState<(typeof topLimits)[number]>("Top 10");
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
 
   const dashboardData = useMemo(() => buildRttDashboardData(topLimit === "Top 10" ? 10 : 20), [topLimit]);
   const rows = dashboardData.qualifiedRows;
-  const selectedRow = rows.find((row) => row.symbol === selectedSymbol) ?? rows[0] ?? null;
+  const sortedRows = useMemo(() => sortDashboardRows(rows, sort), [rows, sort]);
+  const selectedRow = sortedRows.find((row) => row.symbol === selectedSymbol) ?? sortedRows[0] ?? null;
+
+  function handleSort(column: SortColumn) {
+    setSort((current) => nextSortState(current, column));
+  }
 
   return (
     <section className="panel overflow-hidden">
@@ -164,12 +220,12 @@ export function ScreenerTable() {
           <thead>
             <tr className="border-b border-border text-left text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
               <th className="px-4 py-2.5 font-semibold">Rank</th>
-              <th className="px-4 py-2.5 font-semibold">Symbol</th>
+              <SortableHeaderCell column="symbol" sort={sort} onSort={handleSort} />
               <th className="px-4 py-2.5 font-semibold">Company</th>
-              <th className="px-4 py-2.5 text-right font-semibold">Price</th>
-              <th className="px-4 py-2.5 text-right font-semibold">RSI</th>
-              <th className="px-4 py-2.5 font-semibold">RTT Score</th>
-              <th className="px-4 py-2.5 font-semibold">Classification</th>
+              <SortableHeaderCell column="price" align="right" sort={sort} onSort={handleSort} />
+              <SortableHeaderCell column="rsi" align="right" sort={sort} onSort={handleSort} />
+              <SortableHeaderCell column="rttScore" sort={sort} onSort={handleSort} />
+              <SortableHeaderCell column="classification" sort={sort} onSort={handleSort} />
               <th className="px-4 py-2.5 font-semibold">EMA</th>
               <th className="px-4 py-2.5 font-semibold">Momentum</th>
               <th className="px-4 py-2.5 font-semibold">Volume</th>
@@ -178,7 +234,7 @@ export function ScreenerTable() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {sortedRows.map((row) => (
               <tr
                 key={row.symbol}
                 className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-accent/40"
@@ -235,7 +291,9 @@ export function ScreenerTable() {
                       source="scanner"
                       trigger={
                         <button
+                          type="button"
                           aria-label={`Create alert for ${row.symbol}`}
+                          onClick={(event) => event.stopPropagation()}
                           className="rounded-lg border border-border bg-surface p-1.5 text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
                         >
                           <BellPlus className="h-3.5 w-3.5" />

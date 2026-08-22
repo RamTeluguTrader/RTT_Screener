@@ -31,8 +31,10 @@ export type RttDashboardData = {
   rejectedRows: RttDashboardRow[];
 };
 
+// EMA Stack Quality is intentionally excluded here: the RTT engine still
+// calculates it (see rtt-score.ts), but it is proprietary methodology and
+// must not be exposed in the user-facing score breakdown.
 const COMPONENT_LABELS = [
-  { label: "EMA Stack Quality", explanation: "Strong trend alignment and healthy EMA structure." },
   { label: "Momentum", explanation: "Strong recent price momentum." },
   { label: "Volume", explanation: "Volume participation is supporting the current move." },
   { label: "Sector", explanation: "Sector participation is favorable." },
@@ -42,12 +44,11 @@ const COMPONENT_LABELS = [
 
 function mapComponentScores(result: RttScoreResult): DashboardComponentScore[] {
   return [
-    { label: "EMA Stack Quality", score: result.emaStackScore.score, maximum: result.emaStackScore.maximum, explanation: COMPONENT_LABELS[0]!.explanation },
-    { label: "Momentum", score: result.momentumScore.score, maximum: result.momentumScore.maximum, explanation: COMPONENT_LABELS[1]!.explanation },
-    { label: "Volume", score: result.volumeScore.score, maximum: result.volumeScore.maximum, explanation: COMPONENT_LABELS[2]!.explanation },
-    { label: "Sector", score: result.sectorScore.score, maximum: result.sectorScore.maximum, explanation: COMPONENT_LABELS[3]!.explanation },
-    { label: "52W High Proximity", score: result.highProximityScore.score, maximum: result.highProximityScore.maximum, explanation: COMPONENT_LABELS[4]!.explanation },
-    { label: "Extension", score: result.extensionScore.score, maximum: result.extensionScore.maximum, explanation: COMPONENT_LABELS[5]!.explanation },
+    { label: "Momentum", score: result.momentumScore.score, maximum: result.momentumScore.maximum, explanation: COMPONENT_LABELS[0]!.explanation },
+    { label: "Volume", score: result.volumeScore.score, maximum: result.volumeScore.maximum, explanation: COMPONENT_LABELS[1]!.explanation },
+    { label: "Sector", score: result.sectorScore.score, maximum: result.sectorScore.maximum, explanation: COMPONENT_LABELS[2]!.explanation },
+    { label: "52W High Proximity", score: result.highProximityScore.score, maximum: result.highProximityScore.maximum, explanation: COMPONENT_LABELS[3]!.explanation },
+    { label: "Extension", score: result.extensionScore.score, maximum: result.extensionScore.maximum, explanation: COMPONENT_LABELS[4]!.explanation },
   ];
 }
 

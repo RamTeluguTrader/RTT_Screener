@@ -47,9 +47,9 @@ function SettingsPage() {
         <Panel title="Account">
           <dl className="flex flex-col gap-3 text-xs">
             {[
-              ["Name", "Rohan Kulkarni"],
-              ["Email", "rohan@rttdesk.in"],
-              ["Broker link", "Zerodha Kite · connected"],
+              ["Name", "RTT User"],
+              ["Email", "Not connected"],
+              ["Broker link", "Not connected"],
               ["Plan", "Development review mode"],
             ].map(([k, v]) => (
               <div

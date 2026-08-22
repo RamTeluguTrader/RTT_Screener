@@ -44,8 +44,10 @@ function sanitizeNumber(value: unknown): number | null {
   return isFiniteNumber(value) ? value : null;
 }
 
+// EMA Stack Quality is intentionally excluded here: the RTT engine still
+// calculates it (see rtt-score.ts), but it is proprietary methodology and
+// must not be exposed in the user-facing score breakdown.
 const COMPONENT_EXPLANATIONS = {
-  "EMA Stack Quality": "Strong trend alignment and healthy EMA structure.",
   "Price vs EMA Structure": "Price structure remains favorably positioned relative to the trend.",
   Momentum: "Recent price momentum is supporting the setup.",
   Volume: "Volume participation is supporting the move.",
@@ -73,7 +75,6 @@ export function buildStockDetailViewModelFromStock(stock: DevelopmentMarketStock
   }
 
   const componentScores: DetailComponentScore[] = [
-    { label: "EMA Stack Quality", score: scoreResult.emaStackScore.score, maximum: scoreResult.emaStackScore.maximum, explanation: COMPONENT_EXPLANATIONS["EMA Stack Quality"] },
     { label: "Price vs EMA Structure", score: scoreResult.priceVsEmaScore.score, maximum: scoreResult.priceVsEmaScore.maximum, explanation: COMPONENT_EXPLANATIONS["Price vs EMA Structure"] },
     { label: "Momentum", score: scoreResult.momentumScore.score, maximum: scoreResult.momentumScore.maximum, explanation: COMPONENT_EXPLANATIONS.Momentum },
     { label: "Volume", score: scoreResult.volumeScore.score, maximum: scoreResult.volumeScore.maximum, explanation: COMPONENT_EXPLANATIONS.Volume },

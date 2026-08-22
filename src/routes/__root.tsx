@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AlertEngine } from "@/components/alerts/AlertEngine";
+import { initializeTheme } from "@/lib/theme";
 
 
 function NotFoundComponent() {
@@ -114,23 +115,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+/**
+ * TanStack Router always wraps the root route in `shellComponent`, even in this
+ * client-only build (no SSR entry — src/server.ts and src/start.ts were removed).
+ * `index.html` already provides the real <html>/<head>/<body>; rendering another
+ * copy here nested inside <div id="root"> produces an invalid, duplicated body
+ * structure that triggers a known React 19 event-dispatch infinite loop on any
+ * interaction involving a portaled element (e.g. a Dialog) — see
+ * https://github.com/facebook/react/issues/35480. HeadContent/Scripts manage
+ * document.head and script injection directly, so they don't need literal
+ * <head>/<body> tags to work.
+ */
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
+    <>
+      <HeadContent />
+      {children}
+      <Scripts />
+    </>
   );
 }
 
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    initializeTheme();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { Menu, Search, Bell, ChevronDown } from "lucide-react";
 import { SideNav } from "./SideNav";
+import { ThemeToggle } from "./ThemeToggle";
 import { useAlerts } from "@/lib/alerts-store";
 
 export function AppShell({
@@ -66,6 +67,7 @@ export function AppShell({
                   /
                 </kbd>
               </div>
+              <ThemeToggle />
               <Link
                 to="/alerts"
                 aria-label={`Alerts, ${triggered} triggered`}
@@ -86,10 +88,10 @@ export function AppShell({
                 className="flex items-center gap-2 rounded-lg border border-border bg-surface py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <span className="num grid h-7 w-7 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-primary">
-                  RK
+                  RU
                 </span>
                 <span className="hidden text-left sm:block">
-                  <span className="block text-xs font-medium leading-tight">Rohan Kulkarni</span>
+                  <span className="block text-xs font-medium leading-tight">RTT User</span>
                   <span className="block text-[10px] leading-tight text-muted-foreground">
                     Pro desk
                   </span>

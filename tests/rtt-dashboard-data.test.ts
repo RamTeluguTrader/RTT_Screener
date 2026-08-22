@@ -36,9 +36,16 @@ describe("RTT dashboard data layer", () => {
 
     expect(first.classification).toBeDefined();
     expect(first.componentScores.some((score) => score.score !== null)).toBe(true);
-    expect(first.componentScores[0]?.label).toBe("EMA Stack Quality");
+    expect(first.componentScores[0]?.label).toBe("Momentum");
     expect(first.componentScores[0]?.maximum).toBeGreaterThan(0);
     expect(first.componentScores[0]?.score).toBeGreaterThanOrEqual(0);
+  });
+
+  it("does not expose EMA Stack Quality in the dashboard score breakdown", () => {
+    const data = buildRttDashboardData(5);
+    const first = data.qualifiedRows[0]!;
+
+    expect(first.componentScores.some((score) => score.label === "EMA Stack Quality")).toBe(false);
   });
 
   it("does not expose proprietary scoring thresholds in the presentation layer", () => {

@@ -11,7 +11,7 @@ describe("RTT stock detail view model", () => {
     expect(detail?.qualified).toBe(true);
     expect(detail?.rttScore).not.toBeNull();
     expect(detail?.classification).toBeDefined();
-    expect(detail?.componentScores.length).toBe(7);
+    expect(detail?.componentScores.length).toBe(6);
     expect(detail?.ema10).not.toBeNull();
     expect(detail?.ema200).not.toBeNull();
     expect(detail?.rsi14).not.toBeNull();
@@ -23,11 +23,17 @@ describe("RTT stock detail view model", () => {
   it("maps the detail model from the RTT engine output without exposing proprietary thresholds", () => {
     const detail = buildStockDetailViewModel("DEVHAL");
 
-    expect(detail?.componentScores[0]?.label).toBe("EMA Stack Quality");
+    expect(detail?.componentScores[0]?.label).toBe("Price vs EMA Structure");
     expect(detail?.componentScores[0]?.score).toBeGreaterThanOrEqual(0);
     expect(detail?.componentScores[0]?.maximum).toBeGreaterThan(0);
-    expect(detail?.qualitativeExplanations["EMA Stack Quality"]).toContain("EMA");
     expect(detail?.qualitativeExplanations["Momentum"]).toContain("momentum");
+  });
+
+  it("does not expose EMA Stack Quality in the user-facing score breakdown", () => {
+    const detail = buildStockDetailViewModel("DEVHAL");
+
+    expect(detail?.componentScores.some((component) => component.label === "EMA Stack Quality")).toBe(false);
+    expect(detail?.qualitativeExplanations["EMA Stack Quality"]).toBeUndefined();
   });
 
   it("formats component scores as score/max without the 100-denominator", () => {

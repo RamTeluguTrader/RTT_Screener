@@ -5,8 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * RTT Screener design system — dark only.
+ * RTT Screener design system — light and dark themes.
  * Ink-black surfaces, cyan-teal signal accent, amber warning, jade/rose for P&L.
+ * Theme is switched by toggling the `.dark` class on <html> (see src/lib/theme.ts).
  */
 
 @theme inline {
@@ -57,8 +58,68 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Light theme (default). A proper light palette, not an inverted dark theme. */
 :root {
   --radius: 0.875rem;
+  color-scheme: light;
+
+  --background: oklch(0.99 0.002 250);
+  --foreground: oklch(0.22 0.02 255);
+  --surface: oklch(0.975 0.004 250);
+  --surface-raised: oklch(0.95 0.007 252);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.02 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.02 255);
+
+  --primary: oklch(0.55 0.14 195);
+  --primary-foreground: oklch(0.99 0.005 250);
+  --secondary: oklch(0.94 0.008 252);
+  --secondary-foreground: oklch(0.28 0.02 255);
+  --muted: oklch(0.955 0.006 252);
+  --muted-foreground: oklch(0.46 0.02 255);
+  --accent: oklch(0.93 0.02 195);
+  --accent-foreground: oklch(0.22 0.02 255);
+
+  --destructive: oklch(0.55 0.2 22);
+  --destructive-foreground: oklch(0.99 0.005 250);
+  --bull: oklch(0.5 0.15 158);
+  --bear: oklch(0.55 0.19 20);
+  --warn: oklch(0.58 0.15 76);
+  --info: oklch(0.55 0.14 250);
+
+  --border: oklch(0.9 0.006 252);
+  --border-strong: oklch(0.82 0.01 252);
+  --input: oklch(0.93 0.008 252);
+  --ring: oklch(0.55 0.14 195);
+
+  --sidebar: oklch(0.965 0.005 250);
+  --sidebar-foreground: oklch(0.25 0.02 255);
+  --sidebar-primary: oklch(0.55 0.14 195);
+  --sidebar-primary-foreground: oklch(0.99 0.005 250);
+  --sidebar-accent: oklch(0.92 0.012 252);
+  --sidebar-accent-foreground: oklch(0.22 0.02 255);
+  --sidebar-border: oklch(0.9 0.008 252);
+  --sidebar-ring: oklch(0.55 0.14 195);
+
+  --gradient-signal: linear-gradient(135deg, oklch(0.55 0.14 195), oklch(0.5 0.13 220));
+  --shadow-panel: 0 1px 0 0 oklch(1 0 0 / 70%) inset, 0 10px 24px -18px oklch(0.3 0.02 250 / 16%);
+  --shadow-glow: 0 0 0 1px oklch(0.55 0.14 195 / 20%), 0 10px 32px -14px oklch(0.55 0.14 195 / 22%);
+
+  /* Price/EMA chart line colors (Stock Detail page) */
+  --chart-price: oklch(0.5 0.12 220);
+  --chart-ema10: oklch(0.5 0.15 158);
+  --chart-ema20: oklch(0.55 0.15 85);
+  --chart-ema50: oklch(0.6 0.16 55);
+  --chart-ema100: oklch(0.55 0.16 300);
+  --chart-ema200: oklch(0.55 0.19 350);
+  --chart-grid: var(--border);
+  --chart-tick: var(--muted-foreground);
+}
+
+/* Dark theme — the original design, unchanged in appearance. */
+.dark {
+  color-scheme: dark;
 
   --background: oklch(0.164 0.012 250);
   --foreground: oklch(0.96 0.005 250);
@@ -102,15 +163,21 @@
   --gradient-signal: linear-gradient(135deg, oklch(0.79 0.14 185), oklch(0.72 0.13 220));
   --shadow-panel: 0 1px 0 0 oklch(1 0 0 / 4%) inset, 0 18px 40px -24px oklch(0 0 0 / 80%);
   --shadow-glow: 0 0 0 1px oklch(0.79 0.14 185 / 25%), 0 12px 40px -16px oklch(0.79 0.14 185 / 35%);
+
+  /* Price/EMA chart line colors (Stock Detail page) — original literal values, preserved as-is. */
+  --chart-price: #7dd3fc;
+  --chart-ema10: #22c55e;
+  --chart-ema20: #facc15;
+  --chart-ema50: #fb923c;
+  --chart-ema100: #a78bfa;
+  --chart-ema200: #f472b6;
+  --chart-grid: #2b2f39;
+  --chart-tick: #8892a6;
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
-  }
-
-  html {
-    color-scheme: dark;
   }
 
   body {

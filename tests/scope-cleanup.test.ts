@@ -11,7 +11,7 @@ describe("scope cleanup", () => {
 
     expect(detail).not.toBeNull();
     expect(detail?.rttScore).not.toBeNull();
-    expect(detail?.componentScores.length).toBe(7);
+    expect(detail?.componentScores.length).toBe(6);
   });
 
   it("keeps the dashboard data layer and RTT qualification flow intact", () => {

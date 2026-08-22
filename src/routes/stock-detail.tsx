@@ -28,12 +28,12 @@ function StockDetailPage() {
   })) : [], [emaValues, viewModel]);
 
   const chartSeries = [
-    { key: "close", label: "Price", color: "#7dd3fc" },
-    { key: "ema10", label: "EMA10", color: "#22c55e" },
-    { key: "ema20", label: "EMA20", color: "#facc15" },
-    { key: "ema50", label: "EMA50", color: "#fb923c" },
-    { key: "ema100", label: "EMA100", color: "#a78bfa" },
-    { key: "ema200", label: "EMA200", color: "#f472b6" },
+    { key: "close", label: "Price", color: "var(--chart-price)" },
+    { key: "ema10", label: "EMA10", color: "var(--chart-ema10)" },
+    { key: "ema20", label: "EMA20", color: "var(--chart-ema20)" },
+    { key: "ema50", label: "EMA50", color: "var(--chart-ema50)" },
+    { key: "ema100", label: "EMA100", color: "var(--chart-ema100)" },
+    { key: "ema200", label: "EMA200", color: "var(--chart-ema200)" },
   ] as const;
 
   if (!viewModel) {
@@ -49,10 +49,11 @@ function StockDetailPage() {
       <div className="flex flex-col gap-4">
         <button
           onClick={() => navigate({ to: "/scanner" })}
+          aria-label="Back to Scanner"
           className="inline-flex w-fit items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to dashboard
+          Back to Scanner
         </button>
 
         <section className="panel overflow-hidden">
@@ -96,9 +97,9 @@ function StockDetailPage() {
                 {chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsLineChart data={chartData}>
-                      <CartesianGrid stroke="#2b2f39" strokeDasharray="3 3" />
+                      <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="3 3" />
                       <XAxis dataKey="timestamp" tick={false} axisLine={false} />
-                      <YAxis tick={{ fill: "#8892a6", fontSize: 11 }} axisLine={false} />
+                      <YAxis tick={{ fill: "var(--chart-tick)", fontSize: 11 }} axisLine={false} />
                       <Tooltip />
                       {chartSeries.map((series) => (
                         <Line key={series.key} type="monotone" dataKey={series.key} stroke={series.color} strokeWidth={1.2} dot={false} />
