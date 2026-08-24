@@ -5,7 +5,7 @@ import { formatScoreWithMaximum } from "../src/lib/score-display";
 
 describe("RTT stock detail view model", () => {
   it("builds a detail model for a qualified stock", () => {
-    const detail = buildStockDetailViewModel("DEVHAL");
+    const detail = buildStockDetailViewModel("HAL");
 
     expect(detail).not.toBeNull();
     expect(detail?.qualified).toBe(true);
@@ -21,7 +21,7 @@ describe("RTT stock detail view model", () => {
   });
 
   it("maps the detail model from the RTT engine output without exposing proprietary thresholds", () => {
-    const detail = buildStockDetailViewModel("DEVHAL");
+    const detail = buildStockDetailViewModel("HAL");
 
     expect(detail?.componentScores[0]?.label).toBe("Price vs EMA Structure");
     expect(detail?.componentScores[0]?.score).toBeGreaterThanOrEqual(0);
@@ -30,7 +30,7 @@ describe("RTT stock detail view model", () => {
   });
 
   it("does not expose EMA Stack Quality in the user-facing score breakdown", () => {
-    const detail = buildStockDetailViewModel("DEVHAL");
+    const detail = buildStockDetailViewModel("HAL");
 
     expect(detail?.componentScores.some((component) => component.label === "EMA Stack Quality")).toBe(false);
     expect(detail?.qualitativeExplanations["EMA Stack Quality"]).toBeUndefined();

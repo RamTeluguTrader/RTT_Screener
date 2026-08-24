@@ -13,8 +13,8 @@ describe("router navigation", () => {
       expect(router.buildLocation({ to: route as never })).toMatchObject({ pathname: route });
     }
 
-    expect(router.buildLocation({ to: "/stock/$symbol", params: { symbol: "DEVHAL" } })).toMatchObject({
-      pathname: "/stock/DEVHAL",
+    expect(router.buildLocation({ to: "/stock/$symbol", params: { symbol: "HAL" } })).toMatchObject({
+      pathname: "/stock/HAL",
     });
   });
 });

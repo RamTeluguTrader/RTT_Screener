@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  DEVELOPMENT_DATA_NOTICE,
   DEVELOPMENT_MARKET_STOCKS,
   DEVELOPMENT_SECTOR_STRENGTHS,
   IS_DEVELOPMENT_DATA,
@@ -75,27 +76,38 @@ describe("development market dataset", () => {
     expect(rsiHigh.rejectionReason).toBe("RSI_OUT_OF_RANGE");
   });
 
-  it("keeps internal identifiers unique and unchanged", () => {
+  it("uses real, unique, non-DEV-prefixed NSE symbols as the internal identifier", () => {
     const symbols = DEVELOPMENT_MARKET_STOCKS.map((stock) => stock.symbol);
+
     expect(new Set(symbols).size).toBe(symbols.length);
-    expect(symbols.every((symbol) => symbol.startsWith("DEV"))).toBe(true);
+    for (const symbol of symbols) {
+      expect(symbol.startsWith("DEV")).toBe(false);
+    }
+    // Spot-check a few well-known, verified NSE tickers are present.
+    expect(symbols).toEqual(expect.arrayContaining(["HAL", "TCS", "RELIANCE", "HDFCBANK", "ITC"]));
   });
 
-  it("exposes a clean, unique display symbol with no DEV prefix", () => {
-    const displaySymbols = DEVELOPMENT_MARKET_STOCKS.map((stock) => stock.displaySymbol);
-
-    expect(new Set(displaySymbols).size).toBe(displaySymbols.length);
+  it("uses the real symbol as the display symbol too (no separate obfuscated display form)", () => {
     for (const stock of DEVELOPMENT_MARKET_STOCKS) {
-      expect(stock.displaySymbol.startsWith("DEV")).toBe(false);
-      expect(stock.displaySymbol).not.toContain("DEV");
+      expect(stock.displaySymbol).toBe(stock.symbol);
     }
   });
 
-  it("does not derive the display symbol by stripping DEV off the internal symbol", () => {
-    for (const stock of DEVELOPMENT_MARKET_STOCKS) {
-      // Stripping "DEV" off symbols like DEVHAL/DEVTCS would reveal real NSE
-      // tickers (HAL, TCS) that this synthetic data does not represent.
-      expect(stock.displaySymbol).not.toBe(stock.symbol.replace(/^DEV/, ""));
+  it("uses real company names, not the old auto-generated 'Synthetic <sector> N' placeholder", () => {
+    const companyNames = DEVELOPMENT_MARKET_STOCKS.map((stock) => stock.companyName);
+
+    expect(new Set(companyNames).size).toBe(companyNames.length);
+    for (const name of companyNames) {
+      expect(name.startsWith("Synthetic")).toBe(false);
     }
+    expect(companyNames).toEqual(
+      expect.arrayContaining(["Hindustan Aeronautics Ltd", "Tata Consultancy Services Ltd", "Reliance Industries Ltd"]),
+    );
+  });
+
+  it("still clearly marks the dataset as synthetic/development despite using real company identities", () => {
+    expect(IS_DEVELOPMENT_DATA).toBe(true);
+    expect(DEVELOPMENT_DATA_NOTICE.toLowerCase()).toContain("synthetic");
+    expect(DEVELOPMENT_DATA_NOTICE.toLowerCase()).toContain("not live or real nse data");
   });
 });

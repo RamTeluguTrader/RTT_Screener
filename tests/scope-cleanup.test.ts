@@ -7,7 +7,7 @@ import { describeAlert, createAlert, removeAlert, hydrateAlerts } from "../src/l
 
 describe("scope cleanup", () => {
   it("keeps stock detail and RTT scoring available", () => {
-    const detail = buildStockDetailViewModel("DEVHAL");
+    const detail = buildStockDetailViewModel("HAL");
 
     expect(detail).not.toBeNull();
     expect(detail?.rttScore).not.toBeNull();
@@ -25,6 +25,7 @@ describe("scope cleanup", () => {
   it("handles missing stock data without throwing", () => {
     const partialStock: DevelopmentMarketStock = {
       symbol: "TESTPARTIAL",
+      displaySymbol: "TESTPARTIAL",
       companyName: "Test Partial",
       sector: "Testing",
       scenario: "WEAK",
@@ -60,7 +61,7 @@ describe("scope cleanup", () => {
   it("keeps technical alerts informational and avoids recommendation wording", () => {
     hydrateAlerts();
     const alert = createAlert({
-      symbol: "DEVHAL",
+      symbol: "HAL",
       field: "trendScore",
       operator: "above",
       value: 80,

@@ -20,9 +20,14 @@ export type DevelopmentScenario =
   | "RSI_75";
 
 export type DevelopmentMarketStock = {
-  /** Internal, stable dataset identifier (e.g. "DEVHAL"). Used for routing, keys, and RTT engine input — never rendered to users. */
+  /**
+   * Real, verified NSE equity symbol (e.g. "HAL") used as the internal
+   * identifier for routing, keys, and RTT engine input, so a future switch to
+   * live data can reuse the same identifiers. The underlying price/RSI/volume/
+   * candles/score are still entirely synthetic — see IS_DEVELOPMENT_DATA.
+   */
   symbol: string;
-  /** Clean, user-facing symbol (e.g. "DEFE01"). Derived from the sector, not from `symbol`, so it can never coincide with a real NSE ticker. */
+  /** Equal to `symbol`. Kept as a distinct field so display code doesn't need to know whether the identifier is "real" — see prior dev-only display-symbol scheme this replaced. */
   displaySymbol: string;
   companyName: string;
   sector: string;
@@ -44,17 +49,125 @@ export type ScenarioSettings = {
   highMultiplier: number;
 };
 
+/**
+ * Real, verified NSE equity symbols and official company names (checked
+ * against the public NSE scrip master) used as the identity/display layer
+ * for the synthetic dataset below. Every other field on a development stock
+ * — price, RSI, volume, candles, RTT score — remains entirely synthetic;
+ * see IS_DEVELOPMENT_DATA / DEVELOPMENT_DATA_NOTICE.
+ */
 const SECTORS = [
-  { name: "Defence", symbols: ["DEVHAL", "DEVBEL", "DEVMDSL", "DEVBDL", "DEVASTRA", "DEVPARA"] },
-  { name: "Power", symbols: ["DEVNTPC", "DEVPOWERGRID", "DEVTATAPOWER", "DEVSJVN", "DEVNHPC", "DEVTORRENT"] },
-  { name: "IT", symbols: ["DEVTCS", "DEVINFY", "DEVHCLTECH", "DEVWIPRO", "DEVTECHM", "DEVPERSISTENT"] },
-  { name: "Banking", symbols: ["DEVHDFCBANK", "DEVICICIBANK", "DEVSBIN", "DEVAXISBANK", "DEVKOTAKBANK", "DEVINDUSINDBK"] },
-  { name: "Financial Services", symbols: ["DEVBAJFINANCE", "DEVBAJAJFINSV", "DEVSHRIRAMFIN", "DEVCHOLAFIN", "DEVMUTHOOTFIN", "DEVLICHSGFIN"] },
-  { name: "Auto", symbols: ["DEVTATAMOTORS", "DEVMARUTI", "DEVM&M", "DEVEICHERMOT", "DEVTVSMOTOR", "DEVBOSCHLTD"] },
-  { name: "Pharmaceuticals", symbols: ["DEVSUNPHARMA", "DEVDIVISLAB", "DEVDRREDDY", "DEVCIPLA", "DEVLUPIN", "DEVAUROPHARMA"] },
-  { name: "FMCG", symbols: ["DEVITC", "DEVHINDUNILVR", "DEVBRITANNIA", "DEVNESTLEIND", "DEVDABUR", "DEVGODREJCP"] },
-  { name: "Industrials", symbols: ["DEVLT", "DEVSIEMENS", "DEVABB", "DEVCUMMINSIND", "DEVTHERMAX", "DEVVOLTAS"] },
-  { name: "Energy", symbols: ["DEVRELIANCE", "DEVONGC", "DEVIEX", "DEVGAIL", "DEVBPCL", "DEVIOC"] },
+  {
+    name: "Defence",
+    stocks: [
+      { symbol: "HAL", companyName: "Hindustan Aeronautics Ltd" },
+      { symbol: "BEL", companyName: "Bharat Electronics Ltd" },
+      { symbol: "BDL", companyName: "Bharat Dynamics Ltd" },
+      { symbol: "MAZDOCK", companyName: "Mazagon Dock Shipbuilders Ltd" },
+      { symbol: "ASTRAMICRO", companyName: "Astra Microwave Products Ltd" },
+      { symbol: "PARAS", companyName: "Paras Defence and Space Technologies Ltd" },
+    ],
+  },
+  {
+    name: "Power",
+    stocks: [
+      { symbol: "NTPC", companyName: "NTPC Ltd" },
+      { symbol: "POWERGRID", companyName: "Power Grid Corporation of India Ltd" },
+      { symbol: "TATAPOWER", companyName: "Tata Power Company Ltd" },
+      { symbol: "JSWENERGY", companyName: "JSW Energy Ltd" },
+      { symbol: "SJVN", companyName: "SJVN Ltd" },
+      { symbol: "NHPC", companyName: "NHPC Ltd" },
+    ],
+  },
+  {
+    name: "IT",
+    stocks: [
+      { symbol: "TCS", companyName: "Tata Consultancy Services Ltd" },
+      { symbol: "INFY", companyName: "Infosys Ltd" },
+      { symbol: "HCLTECH", companyName: "HCL Technologies Ltd" },
+      { symbol: "COFORGE", companyName: "Coforge Ltd" },
+      { symbol: "WIPRO", companyName: "Wipro Ltd" },
+      { symbol: "TECHM", companyName: "Tech Mahindra Ltd" },
+    ],
+  },
+  {
+    name: "Banking",
+    stocks: [
+      { symbol: "HDFCBANK", companyName: "HDFC Bank Ltd" },
+      { symbol: "ICICIBANK", companyName: "ICICI Bank Ltd" },
+      { symbol: "SBIN", companyName: "State Bank of India" },
+      { symbol: "AXISBANK", companyName: "Axis Bank Ltd" },
+      { symbol: "KOTAKBANK", companyName: "Kotak Mahindra Bank Ltd" },
+      { symbol: "INDUSINDBK", companyName: "IndusInd Bank Ltd" },
+    ],
+  },
+  {
+    name: "Financial Services",
+    stocks: [
+      { symbol: "BAJFINANCE", companyName: "Bajaj Finance Ltd" },
+      { symbol: "BAJAJFINSV", companyName: "Bajaj Finserv Ltd" },
+      { symbol: "HDFCLIFE", companyName: "HDFC Life Insurance Company Ltd" },
+      { symbol: "SBILIFE", companyName: "SBI Life Insurance Company Ltd" },
+      { symbol: "MUTHOOTFIN", companyName: "Muthoot Finance Ltd" },
+      { symbol: "CHOLAFIN", companyName: "Cholamandalam Investment and Finance Company Ltd" },
+    ],
+  },
+  {
+    name: "Auto",
+    stocks: [
+      { symbol: "M&M", companyName: "Mahindra & Mahindra Ltd" },
+      { symbol: "MARUTI", companyName: "Maruti Suzuki India Ltd" },
+      // Tata Motors demerged in 2025; TMCV is the verified successor listing for "Tata Motors Ltd" (commercial vehicles).
+      { symbol: "TMCV", companyName: "Tata Motors Ltd" },
+      { symbol: "BAJAJ-AUTO", companyName: "Bajaj Auto Ltd" },
+      { symbol: "EICHERMOT", companyName: "Eicher Motors Ltd" },
+      { symbol: "TVSMOTOR", companyName: "TVS Motor Company Ltd" },
+    ],
+  },
+  {
+    name: "Pharmaceuticals",
+    stocks: [
+      { symbol: "SUNPHARMA", companyName: "Sun Pharmaceutical Industries Ltd" },
+      { symbol: "DRREDDY", companyName: "Dr. Reddy's Laboratories Ltd" },
+      { symbol: "CIPLA", companyName: "Cipla Ltd" },
+      { symbol: "DIVISLAB", companyName: "Divi's Laboratories Ltd" },
+      { symbol: "LUPIN", companyName: "Lupin Ltd" },
+      { symbol: "AUROPHARMA", companyName: "Aurobindo Pharma Ltd" },
+    ],
+  },
+  {
+    name: "FMCG",
+    stocks: [
+      { symbol: "ITC", companyName: "ITC Ltd" },
+      { symbol: "HINDUNILVR", companyName: "Hindustan Unilever Ltd" },
+      { symbol: "BRITANNIA", companyName: "Britannia Industries Ltd" },
+      { symbol: "NESTLEIND", companyName: "Nestle India Ltd" },
+      { symbol: "DABUR", companyName: "Dabur India Ltd" },
+      { symbol: "GODREJCP", companyName: "Godrej Consumer Products Ltd" },
+    ],
+  },
+  {
+    name: "Industrials",
+    stocks: [
+      { symbol: "SIEMENS", companyName: "Siemens Ltd" },
+      { symbol: "ABB", companyName: "ABB India Ltd" },
+      { symbol: "THERMAX", companyName: "Thermax Ltd" },
+      { symbol: "CUMMINSIND", companyName: "Cummins India Ltd" },
+      { symbol: "LT", companyName: "Larsen & Toubro Ltd" },
+      { symbol: "VOLTAS", companyName: "Voltas Ltd" },
+    ],
+  },
+  {
+    name: "Energy",
+    stocks: [
+      { symbol: "RELIANCE", companyName: "Reliance Industries Ltd" },
+      { symbol: "ONGC", companyName: "Oil and Natural Gas Corporation Ltd" },
+      { symbol: "COALINDIA", companyName: "Coal India Ltd" },
+      { symbol: "OIL", companyName: "Oil India Ltd" },
+      { symbol: "GAIL", companyName: "GAIL (India) Ltd" },
+      { symbol: "BPCL", companyName: "Bharat Petroleum Corporation Ltd" },
+    ],
+  },
 ] as const;
 
 const BASE_SCENARIOS: readonly DevelopmentScenario[] = ["STRONG", "MODERATE", "WEAK", "EMA_MISALIGNED", "RSI_LOW", "RSI_HIGH"];
@@ -78,19 +191,6 @@ function scenarioFor(sectorIndex: number, scenario: DevelopmentScenario): Develo
 
 function round(value: number): number {
   return Math.round(value * 100) / 100;
-}
-
-/**
- * Builds a clean, user-facing symbol from the sector name and the stock's
- * position within it (e.g. "Defence" #1 -> "DEFE01"). Deliberately does NOT
- * derive from the internal `symbol` (e.g. "DEVHAL") — stripping a "DEV"
- * prefix off symbols like DEVHAL/DEVTCS would reveal real NSE tickers
- * (HAL, TCS) that this synthetic data does not represent.
- */
-function displaySymbolFor(sector: string, indexInSector: number): string {
-  const sectorCode = sector.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4);
-  const suffix = String(indexInSector + 1).padStart(2, "0");
-  return `${sectorCode}${suffix}`;
 }
 
 function createCandles(basePrice: number, settings: ScenarioSettings, seed: number): Candle[] {
@@ -123,7 +223,7 @@ function createCandles(basePrice: number, settings: ScenarioSettings, seed: numb
   return candles;
 }
 
-function createStock(symbol: string, sector: string, sectorIndex: number, scenarioIndex: number): DevelopmentMarketStock {
+function createStock(symbol: string, companyName: string, sector: string, sectorIndex: number, scenarioIndex: number): DevelopmentMarketStock {
   const scenario = scenarioFor(sectorIndex, BASE_SCENARIOS[scenarioIndex]!);
   const settings = SCENARIO_SETTINGS[scenario];
   const candles = createCandles(65 + sectorIndex * 18 + scenarioIndex * 7, settings, sectorIndex * 10 + scenarioIndex);
@@ -132,8 +232,8 @@ function createStock(symbol: string, sector: string, sectorIndex: number, scenar
 
   return {
     symbol,
-    displaySymbol: displaySymbolFor(sector, scenarioIndex),
-    companyName: `Synthetic ${sector} ${scenarioIndex + 1}`,
+    displaySymbol: symbol,
+    companyName,
     sector,
     scenario,
     currentPrice,
@@ -147,7 +247,7 @@ function createStock(symbol: string, sector: string, sectorIndex: number, scenar
 }
 
 export const DEVELOPMENT_MARKET_STOCKS: readonly DevelopmentMarketStock[] = SECTORS.flatMap((sector, sectorIndex) =>
-  sector.symbols.map((symbol, scenarioIndex) => createStock(symbol, sector.name, sectorIndex, scenarioIndex)),
+  sector.stocks.map((stock, scenarioIndex) => createStock(stock.symbol, stock.companyName, sector.name, sectorIndex, scenarioIndex)),
 );
 
 export const DEVELOPMENT_SECTOR_STRENGTHS: readonly SectorStrength[] = calculateSectorStrengths(
