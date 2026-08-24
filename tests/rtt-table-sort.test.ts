@@ -4,8 +4,10 @@ import type { RttDashboardRow } from "../src/lib/rtt-dashboard-data";
 import { DEFAULT_SORT, nextSortState, sortDashboardRows, type SortState } from "../src/lib/rtt-table-sort";
 
 function row(overrides: Partial<RttDashboardRow>): RttDashboardRow {
+  const symbol = overrides.symbol ?? "AAA";
   return {
-    symbol: "AAA",
+    symbol,
+    displaySymbol: symbol,
     companyName: "AAA Co",
     sector: "Test",
     currentPrice: 100,

@@ -20,7 +20,10 @@ export type DevelopmentScenario =
   | "RSI_75";
 
 export type DevelopmentMarketStock = {
+  /** Internal, stable dataset identifier (e.g. "DEVHAL"). Used for routing, keys, and RTT engine input — never rendered to users. */
   symbol: string;
+  /** Clean, user-facing symbol (e.g. "DEFE01"). Derived from the sector, not from `symbol`, so it can never coincide with a real NSE ticker. */
+  displaySymbol: string;
   companyName: string;
   sector: string;
   scenario: DevelopmentScenario;
@@ -33,7 +36,7 @@ export type DevelopmentMarketStock = {
   candles: readonly Candle[];
 };
 
-type ScenarioSettings = {
+export type ScenarioSettings = {
   growthRate: number;
   recentGrowthRate: number;
   rsi14: number;
@@ -56,7 +59,7 @@ const SECTORS = [
 
 const BASE_SCENARIOS: readonly DevelopmentScenario[] = ["STRONG", "MODERATE", "WEAK", "EMA_MISALIGNED", "RSI_LOW", "RSI_HIGH"];
 
-const SCENARIO_SETTINGS: Record<DevelopmentScenario, ScenarioSettings> = {
+export const SCENARIO_SETTINGS: Record<DevelopmentScenario, ScenarioSettings> = {
   STRONG: { growthRate: 0.007, recentGrowthRate: 0.007, rsi14: 68, relativeVolume: 2, highMultiplier: 1.01 },
   MODERATE: { growthRate: 0.003, recentGrowthRate: 0.003, rsi14: 60, relativeVolume: 1.25, highMultiplier: 1.08 },
   WEAK: { growthRate: 0.006, recentGrowthRate: -0.001, rsi14: 55, relativeVolume: 0.7, highMultiplier: 1.35 },
@@ -75,6 +78,19 @@ function scenarioFor(sectorIndex: number, scenario: DevelopmentScenario): Develo
 
 function round(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+/**
+ * Builds a clean, user-facing symbol from the sector name and the stock's
+ * position within it (e.g. "Defence" #1 -> "DEFE01"). Deliberately does NOT
+ * derive from the internal `symbol` (e.g. "DEVHAL") — stripping a "DEV"
+ * prefix off symbols like DEVHAL/DEVTCS would reveal real NSE tickers
+ * (HAL, TCS) that this synthetic data does not represent.
+ */
+function displaySymbolFor(sector: string, indexInSector: number): string {
+  const sectorCode = sector.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 4);
+  const suffix = String(indexInSector + 1).padStart(2, "0");
+  return `${sectorCode}${suffix}`;
 }
 
 function createCandles(basePrice: number, settings: ScenarioSettings, seed: number): Candle[] {
@@ -116,6 +132,7 @@ function createStock(symbol: string, sector: string, sectorIndex: number, scenar
 
   return {
     symbol,
+    displaySymbol: displaySymbolFor(sector, scenarioIndex),
     companyName: `Synthetic ${sector} ${scenarioIndex + 1}`,
     sector,
     scenario,
@@ -141,6 +158,15 @@ export const DEVELOPMENT_SECTOR_STRENGTHS: readonly SectorStrength[] = calculate
 );
 
 const SECTOR_STRENGTH_BY_NAME = new Map(DEVELOPMENT_SECTOR_STRENGTHS.map((strength) => [strength.sector, strength]));
+
+/**
+ * Exposes the exact same deterministic candle generator used to build
+ * DEVELOPMENT_MARKET_STOCKS (unmodified), so benchmark/perf tooling can
+ * synthesize larger datasets without duplicating the generation logic.
+ */
+export function generateSyntheticCandles(basePrice: number, scenario: DevelopmentScenario, seed: number): Candle[] {
+  return createCandles(basePrice, SCENARIO_SETTINGS[scenario], seed);
+}
 
 export function toRttScoreInput(stock: DevelopmentMarketStock): RttScoreInput {
   return {

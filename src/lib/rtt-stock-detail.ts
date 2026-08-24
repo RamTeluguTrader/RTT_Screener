@@ -11,6 +11,7 @@ export type DetailComponentScore = {
 
 export type StockDetailViewModel = {
   symbol: string;
+  displaySymbol: string;
   companyName: string;
   sector: string;
   currentPrice: number | null;
@@ -85,6 +86,7 @@ export function buildStockDetailViewModelFromStock(stock: DevelopmentMarketStock
 
   return {
     symbol: stock.symbol,
+    displaySymbol: stock.displaySymbol,
     companyName: stock.companyName,
     sector: stock.sector,
     currentPrice: sanitizeNumber(stock.currentPrice),

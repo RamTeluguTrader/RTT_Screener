@@ -95,7 +95,7 @@ function DetailPanel({ row }: { row: RttDashboardRow }) {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Selected stock</p>
-          <h3 className="mt-1 text-sm font-semibold">{row.symbol} · {row.companyName}</h3>
+          <h3 className="mt-1 text-sm font-semibold">{row.displaySymbol} · {row.companyName}</h3>
           <p className="mt-1 text-xs text-muted-foreground">{row.sector} · {inr(row.currentPrice)}</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -249,10 +249,10 @@ export function ScreenerTable() {
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2.5">
                     <span className="num grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-raised text-[10px] font-semibold text-muted-foreground">
-                      {row.symbol.slice(0, 2)}
+                      {row.displaySymbol.slice(0, 2)}
                     </span>
                     <div className="min-w-0">
-                      <p className="num truncate text-xs font-semibold">{row.symbol}</p>
+                      <p className="num truncate text-xs font-semibold">{row.displaySymbol}</p>
                       <p className="truncate text-[10px] text-muted-foreground">{row.sector}</p>
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export function ScreenerTable() {
                       trigger={
                         <button
                           type="button"
-                          aria-label={`Create alert for ${row.symbol}`}
+                          aria-label={`Create alert for ${row.displaySymbol}`}
                           onClick={(event) => event.stopPropagation()}
                           className="rounded-lg border border-border bg-surface p-1.5 text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
                         >

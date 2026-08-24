@@ -74,4 +74,28 @@ describe("development market dataset", () => {
     expect(rsiLow.rejectionReason).toBe("RSI_OUT_OF_RANGE");
     expect(rsiHigh.rejectionReason).toBe("RSI_OUT_OF_RANGE");
   });
+
+  it("keeps internal identifiers unique and unchanged", () => {
+    const symbols = DEVELOPMENT_MARKET_STOCKS.map((stock) => stock.symbol);
+    expect(new Set(symbols).size).toBe(symbols.length);
+    expect(symbols.every((symbol) => symbol.startsWith("DEV"))).toBe(true);
+  });
+
+  it("exposes a clean, unique display symbol with no DEV prefix", () => {
+    const displaySymbols = DEVELOPMENT_MARKET_STOCKS.map((stock) => stock.displaySymbol);
+
+    expect(new Set(displaySymbols).size).toBe(displaySymbols.length);
+    for (const stock of DEVELOPMENT_MARKET_STOCKS) {
+      expect(stock.displaySymbol.startsWith("DEV")).toBe(false);
+      expect(stock.displaySymbol).not.toContain("DEV");
+    }
+  });
+
+  it("does not derive the display symbol by stripping DEV off the internal symbol", () => {
+    for (const stock of DEVELOPMENT_MARKET_STOCKS) {
+      // Stripping "DEV" off symbols like DEVHAL/DEVTCS would reveal real NSE
+      // tickers (HAL, TCS) that this synthetic data does not represent.
+      expect(stock.displaySymbol).not.toBe(stock.symbol.replace(/^DEV/, ""));
+    }
+  });
 });

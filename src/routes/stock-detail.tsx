@@ -45,7 +45,7 @@ function StockDetailPage() {
   }
 
   return (
-    <AppShell title={viewModel.symbol} subtitle="RTT candidate detail">
+    <AppShell title={viewModel.displaySymbol} subtitle="RTT candidate detail">
       <div className="flex flex-col gap-4">
         <button
           onClick={() => navigate({ to: "/scanner" })}
@@ -61,7 +61,7 @@ function StockDetailPage() {
             <div>
               <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Development Data</p>
               <h2 className="mt-2 text-2xl font-semibold">{viewModel.companyName}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{viewModel.symbol} · {viewModel.sector}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{viewModel.displaySymbol} · {viewModel.sector}</p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <div className="rounded-lg border border-border bg-surface px-3 py-2">
                   <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Current price</p>

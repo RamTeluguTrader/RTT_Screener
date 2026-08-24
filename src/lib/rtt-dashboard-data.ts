@@ -10,6 +10,7 @@ export type DashboardComponentScore = {
 
 export type RttDashboardRow = {
   symbol: string;
+  displaySymbol: string;
   companyName: string;
   sector: string;
   currentPrice: number;
@@ -71,6 +72,7 @@ export function buildRttDashboardData(limit = 20): RttDashboardData {
     const result = calculateRttScore(toRttScoreInput(stock));
     return {
       symbol: stock.symbol,
+      displaySymbol: stock.displaySymbol,
       companyName: stock.companyName,
       sector: stock.sector,
       currentPrice: stock.currentPrice,
@@ -101,6 +103,7 @@ export function buildRttDashboardData(limit = 20): RttDashboardData {
     const result = calculateRttScore(toRttScoreInput(stock));
     return {
       symbol: stock.symbol,
+      displaySymbol: stock.displaySymbol,
       companyName: stock.companyName,
       sector: stock.sector,
       currentPrice: stock.currentPrice,

@@ -29,7 +29,7 @@ const CLASSIFICATION_RANK: Record<string, number> = {
 function compareValues(row: RttDashboardRow, other: RttDashboardRow, column: SortColumn): number {
   switch (column) {
     case "symbol":
-      return row.symbol.localeCompare(other.symbol);
+      return row.displaySymbol.localeCompare(other.displaySymbol);
     case "price":
       return row.currentPrice - other.currentPrice;
     case "rsi":
@@ -46,15 +46,16 @@ function compareValues(row: RttDashboardRow, other: RttDashboardRow, column: Sor
 /**
  * Sorts a copy of the given (already RTT-qualified and ranked) rows for display
  * only. Never mutates the input and never touches `rttScore`, `qualified`, or
- * `rank` — it only changes presentation order. Ties always break by symbol
- * ascending so ordering is deterministic regardless of sort column or direction.
+ * `rank` — it only changes presentation order. Ties always break by the
+ * user-facing display symbol ascending, so ordering is deterministic (and
+ * matches what's on screen) regardless of sort column or direction.
  */
 export function sortDashboardRows(rows: readonly RttDashboardRow[], sort: SortState): RttDashboardRow[] {
   const multiplier = sort.direction === "asc" ? 1 : -1;
   return rows.slice().sort((left, right) => {
     const primary = compareValues(left, right, sort.column);
     if (primary !== 0) return primary * multiplier;
-    return left.symbol.localeCompare(right.symbol);
+    return left.displaySymbol.localeCompare(right.displaySymbol);
   });
 }
 
