@@ -1,8 +1,16 @@
 import { useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { Menu, Search, Bell, ChevronDown } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Menu, Search, Bell, ChevronDown, ArrowRight } from "lucide-react";
 import { SideNav } from "./SideNav";
 import { ThemeToggle } from "./ThemeToggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAlerts } from "@/lib/alerts-store";
 
 export function AppShell({
@@ -15,6 +23,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const triggered = useAlerts().filter((a) => a.status === "triggered").length;
 
 
@@ -81,23 +90,40 @@ export function AppShell({
                 )}
               </Link>
 
-              <button
-                type="button"
-                disabled
-                aria-label="Profile menu is not implemented in the development view"
-                className="flex items-center gap-2 rounded-lg border border-border bg-surface py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                <span className="num grid h-7 w-7 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-primary">
-                  RU
-                </span>
-                <span className="hidden text-left sm:block">
-                  <span className="block text-xs font-medium leading-tight">RTT User</span>
-                  <span className="block text-[10px] leading-tight text-muted-foreground">
-                    Pro desk
-                  </span>
-                </span>
-                <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Profile menu"
+                    className="flex items-center gap-2 rounded-lg border border-border bg-surface py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-accent"
+                  >
+                    <span className="num grid h-7 w-7 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-primary">
+                      RU
+                    </span>
+                    <span className="hidden text-left sm:block">
+                      <span className="block text-xs font-medium leading-tight">RTT User</span>
+                      <span className="block text-[10px] leading-tight text-muted-foreground">
+                        Not connected
+                      </span>
+                    </span>
+                    <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:block" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 border-border bg-popover">
+                  <DropdownMenuLabel className="font-normal">
+                    <span className="block text-xs font-medium leading-tight text-foreground">RTT User</span>
+                    <span className="block text-[11px] leading-tight text-muted-foreground">Not connected</span>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => navigate({ to: "/settings" })}
+                    className="cursor-pointer justify-between"
+                  >
+                    Settings
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
