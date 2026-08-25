@@ -134,3 +134,89 @@ export function isEmaAligned(values: EmaValues): boolean {
     ema100 > ema200
   );
 }
+
+/** The RSI period used by the RTT screening strategy (the qualification band in rtt-config.ts assumes the classic 0-100 Wilder scale). */
+export const RSI_PERIOD = 14;
+
+export type RsiPoint = {
+  timestamp: number;
+  value: number;
+};
+
+export type RsiResult = {
+  period: number;
+  values: readonly RsiPoint[];
+  latest: RsiPoint | null;
+  hasSufficientData: boolean;
+};
+
+/**
+ * Converts a period's average gain/loss into an RSI value using the classic
+ * Wilder formula `100 - 100 / (1 + averageGain / averageLoss)`.
+ *
+ * Edge case, chosen and documented explicitly (no other convention is
+ * implied elsewhere in this codebase): when there is no price movement at
+ * all in the smoothing window (both averages are exactly zero), RSI is
+ * reported as 50 — a neutral reading — rather than left as an undefined
+ * 0/0, matching common charting-platform behavior for a flat series. When
+ * only the average loss is zero, RSI is 100 (maximum, no downside at all).
+ */
+function rsiFromAverages(averageGain: number, averageLoss: number): number {
+  if (averageGain === 0 && averageLoss === 0) return 50;
+  if (averageLoss === 0) return 100;
+  const relativeStrength = averageGain / averageLoss;
+  return 100 - 100 / (1 + relativeStrength);
+}
+
+/**
+ * Calculates a closing-price RSI using Wilder's original smoothing method
+ * (the industry-standard RSI convention, and the one implied by this app's
+ * 50-75 qualification band on the classic 0-100 scale — see rtt-config.ts).
+ *
+ * The first average gain/loss is seeded with a simple average over the
+ * first `period` closing-price changes (requiring `period + 1` candles),
+ * then smoothed forward with Wilder's recursive formula:
+ *   average = (previousAverage * (period - 1) + current) / period
+ *
+ * Does not mutate the input candles.
+ */
+export function calculateRsi(candles: readonly Candle[], period: number = RSI_PERIOD): RsiResult {
+  validateCandles(candles);
+
+  if (candles.length < period + 1) {
+    return { period, values: [], latest: null, hasSufficientData: false };
+  }
+
+  const changes: number[] = [];
+  for (let index = 1; index < candles.length; index += 1) {
+    changes.push(candles[index]!.close - candles[index - 1]!.close);
+  }
+
+  let averageGain = changes.slice(0, period).reduce((total, change) => total + Math.max(change, 0), 0) / period;
+  let averageLoss = changes.slice(0, period).reduce((total, change) => total + Math.max(-change, 0), 0) / period;
+
+  const values: RsiPoint[] = [
+    { timestamp: candles[period]!.timestamp, value: rsiFromAverages(averageGain, averageLoss) },
+  ];
+
+  for (let index = period; index < changes.length; index += 1) {
+    const change = changes[index]!;
+    const gain = Math.max(change, 0);
+    const loss = Math.max(-change, 0);
+    averageGain = (averageGain * (period - 1) + gain) / period;
+    averageLoss = (averageLoss * (period - 1) + loss) / period;
+    values.push({ timestamp: candles[index + 1]!.timestamp, value: rsiFromAverages(averageGain, averageLoss) });
+  }
+
+  return {
+    period,
+    values,
+    latest: values.at(-1) ?? null,
+    hasSufficientData: true,
+  };
+}
+
+/** Extracts the latest RSI14 value from a calculateRsi() result, or null when there isn't enough data — mirrors getLatestEmaValues(). */
+export function getLatestRsiValue(result: RsiResult): number | null {
+  return result.latest?.value ?? null;
+}
