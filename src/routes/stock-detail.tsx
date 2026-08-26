@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { ResponsiveContainer, LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 
 import { AppShell } from "@/components/layout/AppShell";
+import { WatchlistButton } from "@/components/watchlist/WatchlistButton";
 import { loadRtt2xStockDetail, type Rtt2xLiveRow } from "@/lib/rtt2x-live-data";
+import { friendlyRejectionReason, trendStructureLabel } from "@/lib/rtt2x-presentation";
 import { calculateStandardEmas, getLatestEmaValues } from "@/lib/technical-analysis";
 import { inr } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
@@ -12,34 +14,6 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/stock/$symbol")({
   component: StockDetailPage,
 });
-
-/** User-facing trend-structure read — a presentation label only, never the underlying qualification rule. */
-function trendStructureLabel(result: Rtt2xLiveRow["result"]): string {
-  if (!result.qualified) return "Not yet established";
-  switch (result.classification) {
-    case "Exceptional":
-    case "Strong":
-      return "Strong trend";
-    case "Good":
-    case "Watch":
-      return "Healthy trend";
-    default:
-      return "Developing trend";
-  }
-}
-
-function friendlyRejectionReason(reason: string | null): string {
-  switch (reason) {
-    case "EMA_ALIGNMENT_FAILED":
-      return "Trend structure not yet established";
-    case "INSUFFICIENT_DATA":
-      return "Not enough price history available";
-    case "INVALID_DATA":
-      return "A data issue prevented scoring";
-    default:
-      return "Not qualified";
-  }
-}
 
 const COMPONENT_ROWS: { key: keyof Rtt2xLiveRow["result"]; label: string; explanation: string }[] = [
   { key: "ema20ResilienceScore", label: "20 EMA Trend Resilience", explanation: "How well price has respected the 20 EMA recently — tolerant of shallow dips, penalized by deep or frequent breaks." },
@@ -119,9 +93,16 @@ function StockDetailPage() {
   }
 
   if (status === "error" || !row) {
+    // User-facing message only — never the raw proxy/API error text (see errorMessage,
+    // which may reference Upstox or HTTP status codes and is intentionally not shown).
+    const isUnknownSymbol = errorMessage?.includes("not in the current screener universe") ?? false;
     return (
       <AppShell title={symbol} subtitle="RTT 2.X stock analysis">
-        <div className="panel p-6 text-sm text-muted-foreground">{errorMessage ?? "No stock detail available for this symbol."}</div>
+        <div className="panel p-6 text-sm text-muted-foreground">
+          {isUnknownSymbol
+            ? "This stock isn't part of the current RTT screener universe."
+            : "Live analysis is temporarily unavailable for this stock. Please try again."}
+        </div>
       </AppShell>
     );
   }
@@ -161,6 +142,7 @@ function StockDetailPage() {
                   <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Classification</p>
                   <p className="mt-1 text-sm font-semibold">{r.classification ?? "N/A"}</p>
                 </div>
+                <WatchlistButton symbol={row.symbol} />
               </div>
             </div>
             <div className="rounded-lg border border-border bg-surface/80 p-4">

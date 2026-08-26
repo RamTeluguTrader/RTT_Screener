@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const nav = [
   { label: "Dashboard", to: "/", icon: LayoutDashboard },
   { label: "Scanner", to: "/scanner", icon: Radar },
-  { label: "Watchlist", to: "/watchlist", icon: Star },
+  { label: "My Watchlist", to: "/watchlist", icon: Star },
   { label: "Portfolio", to: "/portfolio", icon: Briefcase },
   { label: "Alerts", to: "/alerts", icon: BellRing },
   { label: "Settings", to: "/settings", icon: Settings },

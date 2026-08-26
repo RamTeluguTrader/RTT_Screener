@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, ArrowUpDown, ArrowUpRight, BellPlus, RefreshCw } from "lucide-react";
 import { CreateAlertDialog } from "@/components/alerts/CreateAlertDialog";
+import { WatchlistButton } from "@/components/watchlist/WatchlistButton";
 
 import { useRtt2xUniverse } from "@/hooks/use-rtt2x-universe";
 import type { Rtt2xLiveRow } from "@/lib/rtt2x-live-data";
@@ -11,7 +12,7 @@ import { SECTOR_NAMES } from "@/lib/rtt2x-universe";
 import { inr } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
 
-type SectionKey = "top10" | "top20" | "emerging" | "weakened";
+export type SectionKey = "top10" | "top20" | "emerging" | "weakened";
 
 const SECTIONS: { key: SectionKey; label: string }[] = [
   { key: "top10", label: "Top 10 — Best Setups" },
@@ -164,10 +165,10 @@ function DetailPanel({ row }: { row: Rtt2xLiveRow }) {
   );
 }
 
-export function ScreenerTable() {
+export function ScreenerTable({ initialSection }: { initialSection?: SectionKey } = {}) {
   const navigate = useNavigate();
   const { rows, failedCount, status, errorMessage, refresh } = useRtt2xUniverse();
-  const [section, setSection] = useState<SectionKey>("top10");
+  const [section, setSection] = useState<SectionKey>(initialSection ?? "top10");
   const [sectorFilter, setSectorFilter] = useState<string | "All">("All");
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [sort, setSort] = useState<Rtt2xSortState>(DEFAULT_RTT2X_SORT);
@@ -343,6 +344,7 @@ export function ScreenerTable() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1.5">
+                        <WatchlistButton symbol={row.symbol} variant="icon" />
                         <CreateAlertDialog
                           symbol={row.symbol}
                           source="scanner"

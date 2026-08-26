@@ -1,15 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BellPlus } from "lucide-react";
+import { useMemo } from "react";
+
 import { AppShell } from "@/components/layout/AppShell";
-import { CreateAlertDialog } from "@/components/alerts/CreateAlertDialog";
+import { WatchlistCard } from "@/components/watchlist/WatchlistCard";
+import { WatchlistEmptyState } from "@/components/watchlist/WatchlistEmptyState";
+import { useWatchlistData } from "@/hooks/use-watchlist-data";
+import { useWatchlist, WATCHLIST_MAX } from "@/lib/watchlist-store";
 
-import { Panel, Delta } from "@/components/ui-kit/Panel";
-import { Sparkline } from "@/components/ui-kit/Sparkline";
-import { stocks, watchlist, inr } from "@/lib/market-data";
-
-const title = "Watchlist — RTT Screener";
-const description =
-  "Track development-demo swing candidates with synthetic prices, EMA posture and setup notes.";
+const title = "My Watchlist — RTT Screener";
+const description = "Stocks you're monitoring, tracked independently of Top 10, Top 20, and Emerging.";
 
 export const Route = createFileRoute("/watchlist")({
   head: () => ({
@@ -24,45 +23,35 @@ export const Route = createFileRoute("/watchlist")({
 });
 
 function WatchlistPage() {
-  return (
-    <AppShell title="Watchlist" subtitle="Five development-demo names tracked in the current RTT review">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {watchlist.map((w) => {
-          const s = stocks.find((x) => x.symbol === w.symbol);
-          return (
-            <Panel key={w.symbol}>
-              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-                <div className="min-w-0">
-                  <p className="num truncate text-sm font-semibold">{w.symbol}</p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {s?.company ?? "NSE listed"}
-                  </p>
-                </div>
-                {s && <Sparkline data={s.spark} positive={w.pct >= 0} />}
-              </div>
-              <div className="mt-4 flex items-end justify-between">
-                <p className="num text-xl font-semibold">{inr(w.price)}</p>
-                <Delta value={w.pct} className="text-sm" />
-              </div>
-              <p className="mt-3 rounded-lg border border-border bg-surface px-3 py-2 text-xs text-muted-foreground">
-                {w.note}
-              </p>
-              <div className="mt-3">
-                <CreateAlertDialog
-                  symbol={w.symbol}
-                  source="watchlist"
-                  trigger={
-                    <button className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-2 text-xs font-medium transition-colors hover:border-primary/40 hover:text-primary">
-                      <BellPlus className="h-3.5 w-3.5" />
-                      Create alert
-                    </button>
-                  }
-                />
-              </div>
+  const symbols = useWatchlist();
+  const entryMap = useWatchlistData(symbols);
+  const entries = useMemo(() => symbols.map((symbol) => entryMap[symbol] ?? { symbol, status: "loading" as const, row: null, previousSnapshot: null }), [symbols, entryMap]);
+  const isFull = symbols.length >= WATCHLIST_MAX;
 
-            </Panel>
-          );
-        })}
+  return (
+    <AppShell title="My Watchlist" subtitle={`${symbols.length} / ${WATCHLIST_MAX} stocks`}>
+      <div className="flex flex-col gap-4">
+        <div className="panel flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+          <div>
+            <h2 className="text-sm font-semibold">My Watchlist</h2>
+            <p className="text-xs text-muted-foreground">
+              {symbols.length} / {WATCHLIST_MAX} stocks · stays independent of Top 10, Top 20, and Emerging
+            </p>
+          </div>
+          {isFull ? (
+            <p className="text-xs font-medium text-muted-foreground">Your watchlist is full. Remove a stock to add another.</p>
+          ) : null}
+        </div>
+
+        {symbols.length === 0 ? (
+          <WatchlistEmptyState />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {entries.map((entry) => (
+              <WatchlistCard key={entry.symbol} entry={entry} />
+            ))}
+          </div>
+        )}
       </div>
     </AppShell>
   );

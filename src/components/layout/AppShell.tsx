@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Menu, Search, Bell, ChevronDown, ArrowRight } from "lucide-react";
+import { Menu, Search, Bell, ChevronDown, ArrowRight, X } from "lucide-react";
 import { SideNav } from "./SideNav";
 import { ThemeToggle } from "./ThemeToggle";
+import { GlobalSearch } from "./GlobalSearch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,7 @@ export function AppShell({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const navigate = useNavigate();
   const triggered = useAlerts().filter((a) => a.status === "triggered").length;
 
@@ -45,6 +47,28 @@ export function AppShell({
         </div>
       )}
 
+      {mobileSearchOpen && (
+        <div className="fixed inset-0 z-50 sm:hidden">
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            onClick={() => setMobileSearchOpen(false)}
+          />
+          <div className="absolute inset-x-0 top-0 border-b border-sidebar-border bg-background p-4 shadow-2xl">
+            <div className="flex items-center gap-2">
+              <GlobalSearch className="flex-1" autoFocus onNavigate={() => setMobileSearchOpen(false)} />
+              <button
+                type="button"
+                onClick={() => setMobileSearchOpen(false)}
+                aria-label="Close search"
+                className="shrink-0 rounded-lg border border-border bg-surface p-2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="lg:pl-[248px]">
         <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3.5 sm:px-6">
@@ -63,19 +87,15 @@ export function AppShell({
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <div className="hidden items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 xl:flex">
-                <Search className="h-3.5 w-3.5 text-muted-foreground" />
-                <input
-                  disabled
-                  readOnly
-                  aria-label="Search is not implemented in the development view"
-                  placeholder="Search symbol, sector, setup"
-                  className="w-56 bg-transparent text-xs outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
-                />
-                <kbd className="num rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                  /
-                </kbd>
-              </div>
+              <GlobalSearch className="hidden w-56 sm:block" />
+              <button
+                type="button"
+                onClick={() => setMobileSearchOpen(true)}
+                aria-label="Search stocks"
+                className="rounded-lg border border-border bg-surface p-2 text-muted-foreground hover:text-foreground sm:hidden"
+              >
+                <Search className="h-4 w-4" />
+              </button>
               <ThemeToggle />
               <Link
                 to="/alerts"
