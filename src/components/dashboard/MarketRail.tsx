@@ -61,7 +61,7 @@ export function MarketRail() {
       <Panel title="Research Notes" action={<ScanSearch className="h-4 w-4 text-primary" />}>
         <div className="flex flex-col gap-3">
           <div className="rounded-lg border border-border bg-surface p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Development view</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Screener context</p>
             <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
               RTT results highlight technical structure and qualification context for review.
             </p>
@@ -69,7 +69,7 @@ export function MarketRail() {
           <div className="rounded-lg border border-border bg-surface p-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Technical focus</p>
             <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
-              The dashboard remains focused on score breakdowns, EMA alignment, and sector context.
+              The dashboard remains focused on score breakdowns, trend structure, and sector context.
             </p>
           </div>
         </div>

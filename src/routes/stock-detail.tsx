@@ -1,31 +1,105 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, LineChart } from "lucide-react";
-import { AppShell } from "@/components/layout/AppShell";
-import { buildStockDetailViewModel } from "@/lib/rtt-stock-detail";
-import { inr } from "@/lib/market-data";
-import { formatScoreWithMaximum } from "@/lib/score-display";
-import { calculateStandardEmas, getLatestEmaValues } from "@/lib/technical-analysis";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ResponsiveContainer, LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
+
+import { AppShell } from "@/components/layout/AppShell";
+import { loadRtt2xStockDetail, type Rtt2xLiveRow } from "@/lib/rtt2x-live-data";
+import { calculateStandardEmas, getLatestEmaValues } from "@/lib/technical-analysis";
+import { inr } from "@/lib/market-data";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/stock/$symbol")({
   component: StockDetailPage,
 });
 
+/** User-facing trend-structure read — a presentation label only, never the underlying qualification rule. */
+function trendStructureLabel(result: Rtt2xLiveRow["result"]): string {
+  if (!result.qualified) return "Not yet established";
+  switch (result.classification) {
+    case "Exceptional":
+    case "Strong":
+      return "Strong trend";
+    case "Good":
+    case "Watch":
+      return "Healthy trend";
+    default:
+      return "Developing trend";
+  }
+}
+
+function friendlyRejectionReason(reason: string | null): string {
+  switch (reason) {
+    case "EMA_ALIGNMENT_FAILED":
+      return "Trend structure not yet established";
+    case "INSUFFICIENT_DATA":
+      return "Not enough price history available";
+    case "INVALID_DATA":
+      return "A data issue prevented scoring";
+    default:
+      return "Not qualified";
+  }
+}
+
+const COMPONENT_ROWS: { key: keyof Rtt2xLiveRow["result"]; label: string; explanation: string }[] = [
+  { key: "ema20ResilienceScore", label: "20 EMA Trend Resilience", explanation: "How well price has respected the 20 EMA recently — tolerant of shallow dips, penalized by deep or frequent breaks." },
+  { key: "emaStructureScore", label: "EMA Structure Quality", explanation: "How widely separated the EMA stack is — wider separation reflects a stronger trend." },
+  { key: "emaSlopeExpansionScore", label: "EMA Slope & Expansion", explanation: "Whether the EMA stack is currently rising and widening." },
+  { key: "ema50ResilienceScore", label: "50 EMA Structural Resilience", explanation: "Longer-term structural integrity relative to the 50 EMA, including its own slope." },
+  { key: "trendDevelopmentScore", label: "Current Trend Development", explanation: "Present-tense trend quality — current EMA20 pace, recent higher-highs/lows, and current stack widening." },
+  { key: "momentumScore", label: "Momentum", explanation: "20-day price momentum — a supporting factor, not the dominant one." },
+  { key: "extensionScore", label: "Entry / Extension Quality", explanation: "How close price is to the 20 EMA — peaks near it, tapers off the further extended price becomes." },
+  { key: "volumeScore", label: "Volume Confirmation", explanation: "Relative volume versus the recent average — confirmation only, never required." },
+  { key: "rsiHealthScore", label: "RSI Health", explanation: "Whether RSI sits in a healthy range — context only, not a requirement on its own." },
+];
+
+function useStockDetail(symbol: string) {
+  const [row, setRow] = useState<Rtt2xLiveRow | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setStatus("loading");
+    loadRtt2xStockDetail(symbol).then((result) => {
+      if (cancelled) return;
+      if (result.ok) {
+        setRow(result.row);
+        setStatus("ready");
+      } else {
+        setErrorMessage(result.error);
+        setStatus("error");
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [symbol]);
+
+  return { row, status, errorMessage };
+}
+
 function StockDetailPage() {
   const navigate = useNavigate();
   const { symbol } = Route.useParams();
-  const viewModel = useMemo(() => buildStockDetailViewModel(symbol), [symbol]);
-  const emaValues = useMemo(() => viewModel ? getLatestEmaValues(calculateStandardEmas(viewModel.candles)) : null, [viewModel]);
-  const chartData = useMemo(() => viewModel && viewModel.candles.length > 0 ? viewModel.candles.map((candle) => ({
-    timestamp: candle.timestamp,
-    close: candle.close,
-    ema10: emaValues?.ema10,
-    ema20: emaValues?.ema20,
-    ema50: emaValues?.ema50,
-    ema100: emaValues?.ema100,
-    ema200: emaValues?.ema200,
-  })) : [], [emaValues, viewModel]);
+  const { row, status, errorMessage } = useStockDetail(symbol);
+
+  const emaValues = useMemo(() => (row ? getLatestEmaValues(calculateStandardEmas(row.candles)) : null), [row]);
+  const chartData = useMemo(
+    () =>
+      row && row.candles.length > 0
+        ? row.candles.map((candle) => ({
+            timestamp: candle.timestamp,
+            close: candle.close,
+            ema10: emaValues?.ema10,
+            ema20: emaValues?.ema20,
+            ema50: emaValues?.ema50,
+            ema100: emaValues?.ema100,
+            ema200: emaValues?.ema200,
+          }))
+        : [],
+    [emaValues, row],
+  );
 
   const chartSeries = [
     { key: "close", label: "Price", color: "var(--chart-price)" },
@@ -36,16 +110,28 @@ function StockDetailPage() {
     { key: "ema200", label: "EMA200", color: "var(--chart-ema200)" },
   ] as const;
 
-  if (!viewModel) {
+  if (status === "loading") {
     return (
-      <AppShell title="Stock detail" subtitle="Selected RTT candidate">
-        <div className="panel p-6 text-sm text-muted-foreground">No stock detail available for this symbol.</div>
+      <AppShell title={symbol} subtitle="RTT 2.X stock analysis">
+        <div className="panel p-6 text-sm text-muted-foreground">Loading real market data for {symbol}…</div>
       </AppShell>
     );
   }
 
+  if (status === "error" || !row) {
+    return (
+      <AppShell title={symbol} subtitle="RTT 2.X stock analysis">
+        <div className="panel p-6 text-sm text-muted-foreground">{errorMessage ?? "No stock detail available for this symbol."}</div>
+      </AppShell>
+    );
+  }
+
+  const r = row.result;
+  const distanceFromEma20 = row.distanceFromEma20;
+  const distanceFromEma50 = row.distanceFromEma50;
+
   return (
-    <AppShell title={viewModel.displaySymbol} subtitle="RTT candidate detail">
+    <AppShell title={row.symbol} subtitle="RTT 2.X stock analysis">
       <div className="flex flex-col gap-4">
         <button
           onClick={() => navigate({ to: "/scanner" })}
@@ -59,31 +145,43 @@ function StockDetailPage() {
         <section className="panel overflow-hidden">
           <div className="grid gap-4 border-b border-border px-4 py-4 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Development Data</p>
-              <h2 className="mt-2 text-2xl font-semibold">{viewModel.companyName}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{viewModel.displaySymbol} · {viewModel.sector}</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Live NSE data · RTT 2.X</p>
+              <h2 className="mt-2 text-2xl font-semibold">{row.companyName}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{row.symbol} · {row.sector}</p>
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <div className="rounded-lg border border-border bg-surface px-3 py-2">
                   <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Current price</p>
-                  <p className="num mt-1 text-lg font-semibold">{inr(viewModel.currentPrice)}</p>
+                  <p className="num mt-1 text-lg font-semibold">{inr(row.currentPrice)}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-surface px-3 py-2">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">RTT Score</p>
-                  <p className="num mt-1 text-lg font-semibold">{formatScoreWithMaximum(viewModel.rttScore, 100)}</p>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">RTT 2.X Score</p>
+                  <p className="num mt-1 text-lg font-semibold">{r.rttScore ?? "N/A"}/100</p>
                 </div>
                 <div className="rounded-lg border border-border bg-surface px-3 py-2">
                   <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Classification</p>
-                  <p className="mt-1 text-sm font-semibold">{viewModel.classification ?? "N/A"}</p>
+                  <p className="mt-1 text-sm font-semibold">{r.classification ?? "N/A"}</p>
                 </div>
               </div>
             </div>
             <div className="rounded-lg border border-border bg-surface/80 p-4">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">RTT qualification</p>
-              <p className="mt-2 text-sm font-semibold">{viewModel.qualified ? "RTT Qualified ✓" : "Not qualified"}</p>
-              <p className="mt-3 text-xs text-muted-foreground">EMA Structure</p>
-              <p className="mt-1 text-sm">10 &gt; 20 &gt; 50 &gt; 100 &gt; 200</p>
-              <p className="mt-3 text-xs text-muted-foreground">RSI14</p>
-              <p className="mt-1 text-sm">{viewModel.rsi14?.toFixed(1) ?? "N/A"}</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">RTT status</p>
+              <p className={cn("mt-2 text-sm font-semibold", r.qualified ? "text-bull" : "text-muted-foreground")}>
+                {r.qualified ? "Qualified ✓" : "Not qualified"}
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground">Trend structure</p>
+              <p className="mt-1 text-sm">{trendStructureLabel(r)}</p>
+              {!r.qualified ? (
+                <p className="mt-3 text-xs text-muted-foreground">{friendlyRejectionReason(r.rejectionReason)}</p>
+              ) : null}
+              {r.sectorContext ? (
+                <>
+                  <p className="mt-3 text-xs text-muted-foreground">Sector context (informational only)</p>
+                  <p className="mt-1 text-sm">
+                    {r.sectorContext.sector} · rank {r.sectorContext.rank}/{r.sectorContext.totalSectors} · {r.sectorContext.performance20d > 0 ? "+" : ""}
+                    {r.sectorContext.performance20d.toFixed(2)}% (20D)
+                  </p>
+                </>
+              ) : null}
             </div>
           </div>
 
@@ -118,31 +216,33 @@ function StockDetailPage() {
               <div className="rounded-lg border border-border bg-surface/70 p-4">
                 <h3 className="text-sm font-semibold">EMA structure</h3>
                 <div className="mt-3 space-y-2 text-sm">
-                  {([
-                    { label: "EMA10", value: viewModel.ema10 },
-                    { label: "EMA20", value: viewModel.ema20 },
-                    { label: "EMA50", value: viewModel.ema50 },
-                    { label: "EMA100", value: viewModel.ema100 },
-                    { label: "EMA200", value: viewModel.ema200 },
-                  ] as Array<{ label: string; value: number | null }>).map((row) => (
-                    <div key={row.label} className="flex items-center justify-between rounded-md border border-border/60 bg-surface px-3 py-2">
-                      <span className="text-muted-foreground">{row.label}</span>
-                      <span className="num font-medium">{row.value === null ? "N/A" : inr(row.value)}</span>
+                  {(
+                    [
+                      { label: "EMA10", value: emaValues?.ema10 ?? null },
+                      { label: "EMA20", value: emaValues?.ema20 ?? null },
+                      { label: "EMA50", value: emaValues?.ema50 ?? null },
+                      { label: "EMA100", value: emaValues?.ema100 ?? null },
+                      { label: "EMA200", value: emaValues?.ema200 ?? null },
+                    ] as Array<{ label: string; value: number | null }>
+                  ).map((item) => (
+                    <div key={item.label} className="flex items-center justify-between rounded-md border border-border/60 bg-surface px-3 py-2">
+                      <span className="text-muted-foreground">{item.label}</span>
+                      <span className="num font-medium">{item.value === null ? "N/A" : inr(item.value)}</span>
                     </div>
                   ))}
                 </div>
-                <p className="mt-3 text-xs text-muted-foreground">Aligned: {viewModel.emaAligned ? "Yes" : "No"}</p>
+                <p className="mt-3 text-xs text-muted-foreground">Status: {r.qualified ? "Qualified" : "Not qualified"}</p>
               </div>
 
               <div className="rounded-lg border border-border bg-surface/70 p-4">
                 <h3 className="text-sm font-semibold">Technical status</h3>
                 <div className="mt-3 space-y-2 text-sm">
                   {[
-                    ["Momentum", viewModel.momentum20d === null ? "N/A" : `${viewModel.momentum20d.toFixed(2)}%`],
-                    ["RVOL", viewModel.rvol === null ? "N/A" : viewModel.rvol.toFixed(2)],
-                    ["52W High", viewModel.high52Week === null ? "N/A" : inr(viewModel.high52Week)],
-                    ["Distance from 52W High", viewModel.distanceFrom52WeekHigh === null ? "N/A" : `${viewModel.distanceFrom52WeekHigh.toFixed(2)}%`],
-                    ["Extension from EMA20", viewModel.extensionFromEma20 === null ? "N/A" : `${viewModel.extensionFromEma20.toFixed(2)}%`],
+                    ["RSI14", r.rsi === null ? "N/A" : r.rsi.toFixed(1)],
+                    ["20D Momentum", r.momentum20d === null ? "N/A" : `${r.momentum20d.toFixed(2)}%`],
+                    ["RVOL", r.rvol === null ? "N/A" : `${r.rvol.toFixed(2)}x`],
+                    ["Distance from EMA20", distanceFromEma20 === null ? "N/A" : `${distanceFromEma20 > 0 ? "+" : ""}${distanceFromEma20.toFixed(2)}%`],
+                    ["Distance from EMA50", distanceFromEma50 === null ? "N/A" : `${distanceFromEma50 > 0 ? "+" : ""}${distanceFromEma50.toFixed(2)}%`],
                   ].map(([label, value]) => (
                     <div key={label} className="flex items-center justify-between rounded-md border border-border/60 bg-surface px-3 py-2">
                       <span className="text-muted-foreground">{label}</span>
@@ -157,20 +257,22 @@ function StockDetailPage() {
 
         <section className="panel overflow-hidden">
           <div className="border-b border-border px-4 py-3">
-            <h3 className="text-sm font-semibold">RTT score breakdown</h3>
+            <h3 className="text-sm font-semibold">RTT 2.X score breakdown</h3>
           </div>
           <div className="divide-y divide-border">
-            {viewModel.componentScores.map((component) => (
-              <div key={component.label} className="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
-                <div>
-                  <p className="text-sm font-medium">{component.label}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{component.explanation}</p>
+            {COMPONENT_ROWS.map((component) => {
+              const value = r[component.key];
+              if (typeof value !== "object" || value === null || !("score" in value)) return null;
+              return (
+                <div key={String(component.key)} className="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+                  <div>
+                    <p className="text-sm font-medium">{component.label}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{component.explanation}</p>
+                  </div>
+                  <div className="text-sm font-semibold">{value.score === null ? "N/A" : `${value.score}/${value.maximum}`}</div>
                 </div>
-                <div className="text-sm font-semibold">
-                  {component.score === null ? "N/A" : `${component.score}/${component.maximum}`}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>
