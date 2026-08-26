@@ -31,7 +31,7 @@ function upstoxProxyPlugin(accessToken: string | undefined) {
         const requestUrl = new URL(req.url, "http://internal.local");
 
         if (requestUrl.pathname === "/api/upstox/status") {
-          sendJson(res, 200, { configured: Boolean(accessToken) });
+          sendJson(res, 200, { configured: Boolean(accessToken), tokenLength: accessToken?.length ?? 0 });
           return;
         }
 
@@ -61,7 +61,16 @@ function upstoxProxyPlugin(accessToken: string | undefined) {
           });
 
           if (!upstreamResponse.ok) {
-            sendJson(res, upstreamResponse.status, { error: `Upstox request failed (${upstreamResponse.status}).` });
+            // Diagnostic only — never includes the token. Mirrors the same
+            // fields surfaced by the Vercel Edge Function for direct comparison.
+            const upstreamBodyText = await upstreamResponse.text().catch(() => "");
+            sendJson(res, upstreamResponse.status, {
+              error: `Upstox request failed (${upstreamResponse.status}).`,
+              upstreamStatus: upstreamResponse.status,
+              upstreamBody: upstreamBodyText.slice(0, 500),
+              requestUrl: upstreamUrl,
+              tokenLength: accessToken.length,
+            });
             return;
           }
 
