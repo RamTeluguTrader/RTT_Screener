@@ -7,7 +7,7 @@ import { BottomPanels } from "@/components/dashboard/BottomPanels";
 
 const title = "RTT Screener — EMA Trend Dashboard for Swing Traders";
 const description =
-  "Development-only RTT dashboard for reviewing synthetic market data and score breakdowns.";
+  "RTT 2.X dashboard for reviewing real NSE market data and score breakdowns.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
 
 function Dashboard() {
   return (
-    <AppShell title="Dashboard" subtitle="Development RTT review across a synthetic market dataset">
+    <AppShell title="Dashboard" subtitle="RTT 2.X review across the live NSE screener universe">
       <div className="flex flex-col gap-4">
         <SummaryCards />
         <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_340px]">

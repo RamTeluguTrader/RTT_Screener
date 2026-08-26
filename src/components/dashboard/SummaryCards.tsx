@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 import { Activity, ScanLine, Layers, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { buildRttDashboardData } from "@/lib/rtt-dashboard-data";
+import { useRtt2xUniverse } from "@/hooks/use-rtt2x-universe";
+import { rankByRttScore } from "@/lib/rtt2x-screener";
 
 function Card({
   label,
@@ -43,15 +44,17 @@ function Card({
 }
 
 export function SummaryCards() {
-  const dashboardData = useMemo(() => buildRttDashboardData(20), []);
-  const strongSetups = dashboardData.qualifiedRows.filter((row) => (row.rttScore ?? 0) >= 80).length;
+  const { rows, status } = useRtt2xUniverse();
+  const ranked = useMemo(() => rankByRttScore(rows), [rows]);
+  const strongSetups = ranked.filter((row) => (row.result.rttScore ?? 0) >= 70).length;
+  const loading = status === "loading";
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
       <Card
-        label="Development data"
-        value="Synthetic"
-        meta="RTT engine over mock market history"
+        label="Data source"
+        value="Live NSE"
+        meta="RTT 2.X over real Upstox market data"
         icon={Activity}
         accent="bull"
       >
@@ -60,34 +63,34 @@ export function SummaryCards() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-bull/70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-bull" />
           </span>
-          <span className="text-muted-foreground">Development-only visibility</span>
+          <span className="text-muted-foreground">{loading ? "Loading…" : "Live"}</span>
         </div>
       </Card>
       <Card
         label="Stocks scanned"
-        value={dashboardData.totalStocks.toLocaleString("en-IN")}
-        meta="Synthetic NSE-style universe"
+        value={String(rows.length)}
+        meta="Real NSE screener universe"
         icon={ScanLine}
         accent="info"
       />
       <Card
-        label="RTT qualified"
-        value={String(dashboardData.qualifiedRows.length)}
-        meta="EMA + RSI qualification gate"
+        label="RTT Candidates"
+        value={String(ranked.length)}
+        meta="Stocks matching the RTT setup"
         icon={Layers}
         accent="primary"
       />
       <Card
         label="Top 20 RTT"
-        value={String(Math.min(dashboardData.qualifiedRows.length, 20))}
-        meta="Ranked by RTT score"
+        value={String(Math.min(ranked.length, 20))}
+        meta="Ranked by RTT 2.X score"
         icon={TrendingUp}
         accent="warn"
       />
       <Card
         label="Strong setups"
         value={String(strongSetups)}
-        meta="80+ RTT quality"
+        meta="70+ RTT 2.X quality"
         icon={Sparkles}
         accent="primary"
       />
