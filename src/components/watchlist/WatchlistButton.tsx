@@ -15,9 +15,11 @@ const CONFIRM_TIMEOUT_MS = 3000;
  *
  * `variant="icon"` renders a compact star-only control (outline = not
  * watchlisted, filled = watchlisted) for dense contexts like the Scanner
- * table; `variant="default"` (the original) renders the full labeled button.
- * Both variants share the exact same state machine below — this is not a
- * second watchlist implementation, just two renderings of one.
+ * table; `variant="compact"` adds a short "Add"/"Watching" label next to
+ * the same star, for Global Search results; `variant="default"` (the
+ * original) renders the full labeled button. All variants share the exact
+ * same state machine below — this is not a second watchlist implementation,
+ * just three renderings of one.
  */
 export function WatchlistButton({
   symbol,
@@ -26,7 +28,7 @@ export function WatchlistButton({
 }: {
   symbol: string;
   className?: string;
-  variant?: "default" | "icon";
+  variant?: "default" | "icon" | "compact";
 }) {
   const watchlist = useWatchlist();
   const inWatchlist = watchlist.includes(symbol);
@@ -91,6 +93,40 @@ export function WatchlistButton({
         )}
       >
         <Star className="h-4 w-4" fill={inWatchlist && !confirming ? "currentColor" : "none"} />
+      </button>
+    );
+  }
+
+  if (variant === "compact") {
+    const label = isFull
+      ? "Watchlist full — remove a stock to add another."
+      : inWatchlist
+        ? confirming
+          ? `Click again to remove ${symbol} from watchlist`
+          : `${symbol} is in your watchlist — click to remove`
+        : `Add ${symbol} to watchlist`;
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isFull}
+        aria-label={label}
+        aria-pressed={inWatchlist}
+        title={label}
+        className={cn(
+          "inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-medium transition-colors",
+          isFull
+            ? "cursor-not-allowed text-muted-foreground opacity-50"
+            : inWatchlist
+              ? confirming
+                ? "text-bear"
+                : "text-primary hover:text-bear"
+              : "text-muted-foreground hover:text-primary",
+          className,
+        )}
+      >
+        <Star className="h-3.5 w-3.5" fill={inWatchlist && !confirming ? "currentColor" : "none"} />
+        {inWatchlist ? (confirming ? "Remove?" : "Watching") : "Add"}
       </button>
     );
   }

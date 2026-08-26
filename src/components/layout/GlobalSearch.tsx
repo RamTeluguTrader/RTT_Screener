@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 
+import { WatchlistButton } from "@/components/watchlist/WatchlistButton";
 import { moveHighlight, resolveSelection, searchUniverse } from "@/lib/rtt2x-search";
 import type { UniverseStock } from "@/lib/rtt2x-universe";
 import { cn } from "@/lib/utils";
@@ -11,8 +12,11 @@ const DEBOUNCE_MS = 120;
 /**
  * "Search -> Research" only. Selecting a result navigates straight to the
  * existing stock-detail page (which fetches live data itself) — this
- * component never fetches anything, and never adds the stock to a
- * watchlist (that flow doesn't exist yet, by design).
+ * component never fetches anything itself. Each result also carries a
+ * compact watchlist action (the same WatchlistButton/store used everywhere
+ * else) so a stock can be added without leaving the dropdown; that action is
+ * a sibling of the navigate button, not nested inside it, and stops its own
+ * click propagation, so it never triggers navigation.
  */
 export function GlobalSearch({
   className,
@@ -148,20 +152,27 @@ export function GlobalSearch({
             <ul>
               {results.map((stock, index) => (
                 <li key={stock.symbol} role="option" aria-selected={index === highlightedIndex}>
-                  <button
-                    type="button"
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => selectResult(stock)}
-                    onMouseEnter={() => setHighlightedIndex(index)}
+                  <div
                     className={cn(
-                      "flex w-full flex-col gap-0.5 px-3 py-2 text-left transition-colors",
+                      "flex items-center gap-2 px-3 py-2 transition-colors",
                       index === highlightedIndex ? "bg-accent" : "hover:bg-accent/60",
                     )}
                   >
-                    <span className="num text-xs font-semibold">{stock.symbol}</span>
-                    <span className="truncate text-[11px] text-muted-foreground">{stock.companyName}</span>
-                    <span className="text-[10px] text-muted-foreground">{stock.sector}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => selectResult(stock)}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      className="flex min-w-0 flex-1 flex-col gap-0.5 text-left"
+                    >
+                      <span className="num text-xs font-semibold">{stock.symbol}</span>
+                      <span className="truncate text-[11px] text-muted-foreground">{stock.companyName}</span>
+                      <span className="text-[10px] text-muted-foreground">{stock.sector}</span>
+                    </button>
+                    <div onMouseDown={(event) => event.preventDefault()}>
+                      <WatchlistButton symbol={stock.symbol} variant="compact" />
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
