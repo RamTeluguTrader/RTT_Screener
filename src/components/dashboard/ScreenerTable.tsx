@@ -7,6 +7,7 @@ import { WatchlistButton } from "@/components/watchlist/WatchlistButton";
 import { useRtt2xUniverse } from "@/hooks/use-rtt2x-universe";
 import type { Rtt2xLiveRow } from "@/lib/rtt2x-live-data";
 import { buildEmergingList, buildRecentlyWeakenedList, filterBySector, rankByRttScore, topN, type WeakenedRow } from "@/lib/rtt2x-screener";
+import { ENTRY_CONTEXT_COMPACT_LABEL, ENTRY_CONTEXT_EMOJI, getEntryContext } from "@/lib/entry-context";
 import { DEFAULT_RTT2X_SORT, nextRtt2xSortState, sortRtt2xRows, type Rtt2xSortColumn, type Rtt2xSortState } from "@/lib/rtt2x-table-sort";
 import { SECTOR_NAMES } from "@/lib/rtt2x-universe";
 import { inr } from "@/lib/market-data";
@@ -15,7 +16,7 @@ import { cn } from "@/lib/utils";
 export type SectionKey = "top10" | "top20" | "emerging" | "weakened";
 
 const SECTIONS: { key: SectionKey; label: string }[] = [
-  { key: "top10", label: "Top 10 — Best Setups" },
+  { key: "top10", label: "Top 10 — Strongest Trends" },
   { key: "top20", label: "Top 20 — Watchlist" },
   { key: "emerging", label: "Emerging" },
   { key: "weakened", label: "Recently Weakened" },
@@ -88,6 +89,25 @@ function resilienceLabel(row: Rtt2xLiveRow): { label: string; tone: string } {
 function ResilienceBadge({ row }: { row: Rtt2xLiveRow }) {
   const { label, tone } = resilienceLabel(row);
   return <span className={cn("rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-wider ring-1", tone)}>{label}</span>;
+}
+
+/**
+ * Entry Context — informational/presentation-only, describes how stretched
+ * the current price is versus EMA20 and the 52-week high. Never affects RTT
+ * Score, qualification, or ranking (see src/lib/entry-context.ts).
+ */
+function EntryContextBadge({ row }: { row: Rtt2xLiveRow }) {
+  const { context } = getEntryContext(row);
+  return (
+    <span
+      title={context}
+      aria-label={context}
+      className="inline-flex items-center gap-1 whitespace-nowrap rounded-md px-2 py-1 text-[10px] font-semibold text-foreground/90"
+    >
+      <span aria-hidden="true">{ENTRY_CONTEXT_EMOJI[context]}</span>
+      {ENTRY_CONTEXT_COMPACT_LABEL[context]}
+    </span>
+  );
 }
 
 function isWeakenedRow(row: Rtt2xLiveRow): row is WeakenedRow {
@@ -255,7 +275,7 @@ export function ScreenerTable({ initialSection }: { initialSection?: SectionKey 
         )}
         {isWeakenedSection && (
           <p className="text-[11px] text-muted-foreground">
-            Monitoring only, not a trading signal: stocks that recently qualified but whose technical structure has since deteriorated.
+            Monitoring only: stocks that recently qualified but whose technical structure has since deteriorated.
           </p>
         )}
       </header>
@@ -267,7 +287,7 @@ export function ScreenerTable({ initialSection }: { initialSection?: SectionKey 
       ) : (
         <>
           <div className="scroll-slim overflow-x-auto">
-            <table className="w-full min-w-[1180px] border-collapse text-sm">
+            <table className="w-full min-w-[1360px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                   <th className="px-4 py-2.5 font-semibold">Rank</th>
@@ -276,6 +296,7 @@ export function ScreenerTable({ initialSection }: { initialSection?: SectionKey 
                   <SortableHeaderCell column="price" align="right" sort={sort} onSort={handleSort} />
                   <SortableHeaderCell column="rttScore" sort={sort} onSort={handleSort} />
                   <th className="px-4 py-2.5 font-semibold">Trend</th>
+                  <th className="px-4 py-2.5 font-semibold">Entry Context</th>
                   <SortableHeaderCell column="momentum" align="right" sort={sort} onSort={handleSort} />
                   <SortableHeaderCell column="rsi" align="right" sort={sort} onSort={handleSort} />
                   <SortableHeaderCell column="rvol" align="right" sort={sort} onSort={handleSort} />
@@ -327,6 +348,9 @@ export function ScreenerTable({ initialSection }: { initialSection?: SectionKey 
                         {trendLabel(row)}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <EntryContextBadge row={row} />
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <span className="num text-xs font-semibold">{row.result.momentum20d === null ? "N/A" : `${row.result.momentum20d > 0 ? "+" : ""}${row.result.momentum20d.toFixed(1)}%`}</span>
                     </td>
@@ -376,7 +400,7 @@ export function ScreenerTable({ initialSection }: { initialSection?: SectionKey 
                 ))}
                 {sortedRows.length === 0 && status === "ready" ? (
                   <tr>
-                    <td colSpan={12} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                       No stocks match this view right now.
                     </td>
                   </tr>

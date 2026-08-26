@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { WatchlistButton } from "@/components/watchlist/WatchlistButton";
 import { loadRtt2xStockDetail, type Rtt2xLiveRow } from "@/lib/rtt2x-live-data";
 import { friendlyRejectionReason, trendStructureLabel } from "@/lib/rtt2x-presentation";
+import { ENTRY_CONTEXT_EMOJI, entryContextExplanation, getEntryContext } from "@/lib/entry-context";
 import { calculateStandardEmas, getLatestEmaValues } from "@/lib/technical-analysis";
 import { inr } from "@/lib/market-data";
 import { cn } from "@/lib/utils";
@@ -110,6 +111,7 @@ function StockDetailPage() {
   const r = row.result;
   const distanceFromEma20 = row.distanceFromEma20;
   const distanceFromEma50 = row.distanceFromEma50;
+  const entryContext = getEntryContext(row);
 
   return (
     <AppShell title={row.symbol} subtitle="RTT 2.X stock analysis">
@@ -152,6 +154,11 @@ function StockDetailPage() {
               </p>
               <p className="mt-3 text-xs text-muted-foreground">Trend structure</p>
               <p className="mt-1 text-sm">{trendStructureLabel(r)}</p>
+              <p className="mt-3 text-xs text-muted-foreground">Entry Context</p>
+              <p className="mt-1 text-sm">
+                <span aria-hidden="true">{ENTRY_CONTEXT_EMOJI[entryContext.context]}</span> {entryContext.context}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{entryContextExplanation(entryContext)}</p>
               {!r.qualified ? (
                 <p className="mt-3 text-xs text-muted-foreground">{friendlyRejectionReason(r.rejectionReason)}</p>
               ) : null}

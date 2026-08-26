@@ -32,7 +32,7 @@ export const Route = createFileRoute("/scanner")({
 });
 
 const sections = [
-  { name: "Top 10 — Best Setups", desc: "Highest RTT 2.X score across the qualified universe" },
+  { name: "Top 10 — Strongest Trends", desc: "Highest RTT 2.X score across the qualified universe" },
   { name: "Top 20 — Watchlist", desc: "Extends Top 10 with the next-ranked qualified stocks" },
   { name: "Emerging", desc: "Developing trend-resilience structure, not yet Top 20" },
   { name: "Recently Weakened", desc: "Monitoring only — technical structure deteriorating" },

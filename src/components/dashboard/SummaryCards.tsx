@@ -74,7 +74,7 @@ export function SummaryCards() {
         accent="info"
       />
       <Card
-        label="RTT Candidates"
+        label="RTT Matches"
         value={String(ranked.length)}
         meta="Stocks matching the RTT setup"
         icon={Layers}
@@ -88,7 +88,7 @@ export function SummaryCards() {
         accent="warn"
       />
       <Card
-        label="Strong setups"
+        label="Strong Trends"
         value={String(strongSetups)}
         meta="70+ RTT 2.X quality"
         icon={Sparkles}

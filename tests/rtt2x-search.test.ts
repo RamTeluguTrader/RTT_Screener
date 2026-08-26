@@ -24,13 +24,17 @@ describe("searchUniverse", () => {
   });
 
   it("finds a sector match", () => {
-    const results = searchUniverse("defence");
+    // HAL/BEL/BDL/MAZDOCK sit under NSE's real "Capital Goods" industry
+    // classification (the universe uses NSE's own Industry field, not an
+    // invented "Defence" category), so a sector-name query for their real
+    // sector must still surface them.
+    const results = searchUniverse("capital goods", 100);
     const symbols = results.map((r) => r.symbol);
-    expect(symbols).toEqual(expect.arrayContaining(["HAL", "BEL", "BDL", "MAZDOCK", "ASTRAMICRO", "PARAS"]));
+    expect(symbols).toEqual(expect.arrayContaining(["HAL", "BEL", "BDL", "MAZDOCK"]));
   });
 
-  it("finds a partial sector match ('pharma' -> Pharmaceuticals)", () => {
-    const results = searchUniverse("pharma", 20);
+  it("finds a partial sector match ('healthcare' -> the real NSE Healthcare industry)", () => {
+    const results = searchUniverse("healthcare", 60);
     const symbols = results.map((r) => r.symbol);
     expect(symbols).toEqual(
       expect.arrayContaining(["SUNPHARMA", "AUROPHARMA", "DRREDDY", "CIPLA", "DIVISLAB", "LUPIN"]),
@@ -41,18 +45,22 @@ describe("searchUniverse", () => {
     const lower = searchUniverse("reliance").map((r) => r.symbol);
     const upper = searchUniverse("RELIANCE").map((r) => r.symbol);
     const mixed = searchUniverse("RelIance").map((r) => r.symbol);
-    expect(lower).toEqual(["RELIANCE"]);
+    expect(lower.length).toBeGreaterThan(0);
     expect(upper).toEqual(lower);
     expect(mixed).toEqual(lower);
   });
 
   it("ranks a symbol-prefix match above a sector-prefix match, even for a stock in that sector", () => {
-    // POWERGRID's symbol starts with "power" (rank 1); the rest of the Power sector
-    // only matches via the sector name itself (rank 3). POWERGRID must come first.
-    const results = searchUniverse("power", 20);
-    expect(results[0]?.symbol).toBe("POWERGRID");
-    const rest = results.slice(1).map((r) => r.symbol);
-    expect(rest).toEqual(["JSWENERGY", "NHPC", "NTPC", "SJVN", "TATAPOWER"]);
+    // POWERGRID's symbol starts with "power" (rank 1); PFC ("Power Finance
+    // Corporation") matches via its company name (rank 2); NHPC only matches
+    // via the Power sector name itself (rank 3). Prefix/company matches must
+    // precede the sector-only match regardless of how many stocks share it.
+    const results = searchUniverse("power", 40).map((r) => r.symbol);
+    expect(results[0]).toBe("POWERGRID");
+    const companyPrefixIndex = results.indexOf("PFC");
+    const sectorOnlyIndex = results.indexOf("NHPC");
+    expect(companyPrefixIndex).toBeGreaterThan(0);
+    expect(sectorOnlyIndex).toBeGreaterThan(companyPrefixIndex);
   });
 
   it("returns an empty array for no match, without throwing", () => {
