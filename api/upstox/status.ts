@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Node.js runtime (not Edge) — see api/upstox/candles.ts for why.
 export const config = { runtime: "nodejs" };
 

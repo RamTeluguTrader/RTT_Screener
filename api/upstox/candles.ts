@@ -1,4 +1,5 @@
-import { buildUpstoxCandleUrl, parseUpstoxCandlesBody, type RawUpstoxCandle } from "../../src/lib/upstox-proxy-shared";
+/// <reference types="node" />
+import { buildUpstoxCandleUrl, parseUpstoxCandlesBody, type RawUpstoxCandle } from "../../src/lib/upstox-proxy-shared.js";
 
 // Node.js runtime (not Edge): Vercel Edge Runtime forcibly overrides the
 // outbound fetch User-Agent to a Vercel-identifying string that application
